@@ -1,0 +1,13 @@
+<launch>    
+    <node pkg="joy" type="joy_node" name="speedlink_joystick_driver" output="screen" 
+          ns="speedlink">
+    </node>
+    <node   pkg="rose_joystick" 
+            type="teleop.py" 
+            name="joystick_teleop_interpreter" 
+            output="screen" 
+            args="$(find rose_joystick)/param/speedlink_strike.yaml"
+            required="true"
+            ns="speedlink">
+    </node>
+</launch>

@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<package>
+  <name>rose_joystick</name>
+  <version>0.0.0</version>
+  <description>The rose_joystick_teleop package subscribes to the state of a joystick.
+    The joy package has a node 'joy_node' that publishes a Joy-message with the state of the connected joystick.
+
+    The node in this package converts that state to a control signal for the base (/cmd_vel), head, neck, arms etc.
+
+    The current mode is published at ~mode.
+    The mode can be set via a service at ~set_mode.
+    Which modes are available via that service is published at ~available_modes
+  </description>
+
+  <maintainer email="beek@robot-rose.nl">Loy van Beek</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>joy</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>dynamixel_msgs</build_depend>
+  <build_depend>rose20_platform</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>roscomm</build_depend>
+  <build_depend>message_generation</build_depend>
+
+  <run_depend>joy</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>dynamixel_msgs</run_depend>
+  <run_depend>rose20_platform</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>roscomm</run_depend>
+  <run_depend>message_runtime</run_depend>
+</package>

@@ -1,0 +1,14 @@
+<launch>    
+    <node pkg="joy" type="joy_node" name="attack3_joystick_driver" output="screen" ns="attack3">
+        <remap from="joy" to="attack3_joy"/><!--Map to a specific topic so not all joysticks with different mappings publish to the same topic and mess things up-->
+    </node>
+    <node   pkg="rose_joystick" 
+            type="teleop.py" 
+            name="attack3_joystick_teleop_interpreter" 
+            output="screen" 
+            args="$(find rose_joystick)/param/logitech_attack_3.yaml"
+            required="true"
+            ns="attack3">
+        <remap to="joy" from="attack3_joy"/>
+    </node>
+</launch>

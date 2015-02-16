@@ -1,0 +1,16 @@
+<launch>    
+    <!-- <include file="$(find spacenav_node)/launch/classic.launch"/> -->
+    <node pkg="spacenav_node" type="spacenav_node" name="spacenav_node" output="screen" ns="spacenav">
+        <param name="zero_when_static" value="true"/>
+        <param name="static_count_threshold" value="300"/>
+        <param name="static_trans_deadband" value="400"/>
+        <param name="static_rot_deadband" value="400"/>
+    </node>
+    <node   pkg="rose_joystick" 
+            type="teleop.py" 
+            name="spacenav_joystick_teleop_interpreter" 
+            output="screen" 
+            args="$(find rose_joystick)/param/spacenav.yaml"
+            required="true"
+             ns="spacenav"/>
+</launch>

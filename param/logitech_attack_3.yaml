@@ -1,0 +1,40 @@
+topic: "joy"
+base:
+  submodes:
+    steering:
+      linear_x: {axis: 1, scale: 0.2}
+      angular_z: {axis: 0, scale: 0.4}
+      throttle: {axis: 2, scale: 2.0}
+      enable: 
+        - 0
+    strafing:
+      linear_x: {axis: 1, scale: 0.2}
+      throttle: {axis: 2, scale: 2.0}
+      linear_y: {axis: 0, scale: 0.1}
+      enable:
+        - 0
+        - 1
+neck:  
+  submodes:
+    control:
+      pan: {axis: 0, scale: 3.0}
+      tilt: {axis: 1, scale: -3.0}
+      #tilt_simple: {axis: 5, scale: 0.15} #This joystick has no such mode
+      predefined_pose_stepper: 2 #Press this button to go to a next predefined pose
+      predefined_poses:
+        base: {pan: 0, tilt: -1.1}
+        driving: {pan: 0, tilt: -0.5}
+        left: {pan: 0.5, tilt: -1.1}
+        right: {pan: -0.5, tilt: -1.1}
+arms:
+  submodes:
+    linear:
+      linear_x: {axis: 1, scale: 0.1}
+      linear_y: {axis: 0, scale: 0.1}
+      linear_z: {axis: 2, scale: 0.1}
+      enable:
+        - 0
+  open_close: 1
+next_mode: 4
+previous_mode: 3
+deadzone: 0.2 #axis values smaller than this value will be set to 0.0. For a spacenav, its hard to control only 1 axis

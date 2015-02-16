@@ -1,0 +1,50 @@
+topic: "joy"
+base:
+  submodes:
+    steering:
+      linear_x: {axis: 4, scale: 0.2}
+      angular_z: {axis: 3, scale: 0.35}
+      throttle: {axis: 1, scale: 1.0} #TODO: There is no throttle button
+      enable: 
+        - 5 #Deadman's switch = trigger button labeled 6 (index 5)
+    strafing:
+      linear_x: {axis: 4, scale: 0.2}
+      linear_y: {axis: 3, scale: 0.1} #depends on button press_to_strafe
+      throttle: {axis: 1, scale: 1.0} #TODO: There is no throttle button
+      enable: 
+        - 4 
+        - 5 #Deadman's switch = trigger button labeled 6 (index 5)
+neck:
+  tilt_simple: {axis: 6, scale: 0.15}
+  pan_simple: {axis: 5, scale: 0.15}
+  submodes:
+    control:
+      pan: {axis: 5, scale: 3.0}
+      tilt: {axis: 6, scale: -3.0}
+      enable: 
+        - 5 #Deadman's switch = trigger button labeled 6 (index 5)
+  predefined_pose_stepper: 0 #Press this button to go to a next predefined pose
+  predefined_poses:
+    base:     {pan: 0,    tilt: -1.2, button: 8}
+    driving:  {pan: 0,    tilt: -0.5, button: 9}
+    left:     {pan: 0.5,  tilt: -1.2, button: 6}
+    right:    {pan: -0.5, tilt: -1.2, button: 7}
+arms:
+  submodes:
+    linear:
+      linear_x: {axis: 3, scale: -0.1}
+      linear_y: {axis: 1, scale: -0.1}
+      linear_z: {axis: 4, scale: 0.1}
+      enable: 
+        - 5 #Deadman's switch = trigger button labeled 6 (index 5)
+    angular:
+      angular_x: {axis: 4, scale: -0.4}
+      angular_y: {axis: 0, scale: -0.4}
+      angular_z: {axis: 3, scale: -0.4}
+      enable: 
+        - 4 
+        - 5 #Deadman's switch = trigger button labeled 6 (index 5)
+  open_close: 7 #Button 8 on the base of the joystick, index 7
+next_mode: 1
+previous_mode: 3
+deadzone: 0.2 #axis values smaller than this value will be set to 0.0. For a spacenav, its hard to control only 1 axis

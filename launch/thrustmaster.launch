@@ -1,0 +1,13 @@
+<launch>    
+    <node pkg="joy" type="joy_node" name="thrustmaster_joystick_driver" output="screen"
+        ns="thrustmaster">
+    </node>
+    <node   pkg="rose_joystick" 
+            type="teleop.py" 
+            name="joystick_teleop_interpreter" 
+            output="screen" 
+            args="$(find rose_joystick)/param/thrustmaster_t_flight-stick_x.yaml"
+            required="true"
+            ns="thrustmaster">
+    </node>
+</launch>

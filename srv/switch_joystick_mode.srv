@@ -1,0 +1,3 @@
+string switch_to_mode
+---
+bool switched

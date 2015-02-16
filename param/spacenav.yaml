@@ -1,0 +1,11 @@
+topic: "spacenav/joy"
+arms:
+  linear_x: {axis: 1, scale: -0.1}
+  linear_y: {axis: 2, scale: -0.1}
+  linear_z: {axis: 0, scale: 0.1}
+  angular_x: {axis: 4, scale: -0.3}
+  angular_y: {axis: 5, scale: -0.3}
+  angular_z: {axis: 3, scale: 0.3}
+  open_close: 1
+next_mode: 0
+deadzone: 0.2 #axis values smaller than this value will be set to 0.0. For a spacenav, its hard to control only 1 axis
