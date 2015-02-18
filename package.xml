@@ -21,7 +21,6 @@
   <build_depend>joy</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>dynamixel_msgs</build_depend>
-  <build_depend>rose20_platform</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>roscomm</build_depend>
   <build_depend>message_generation</build_depend>
@@ -29,7 +28,6 @@
   <run_depend>joy</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>dynamixel_msgs</run_depend>
-  <run_depend>rose20_platform</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>roscomm</run_depend>
   <run_depend>message_runtime</run_depend>
