@@ -130,6 +130,7 @@ class BaseControlInterpreterWithSubmodes(JoystickInterpreter):
         self.twist = Twist()
         self.active = False
         self.previously_active = False
+        self.timer = None
 
         steering = BaseSteeringMode(settings['submodes']['steering'], self)
         strafing = BaseStrafingMode(settings['submodes']['strafing'], self)
@@ -139,21 +140,20 @@ class BaseControlInterpreterWithSubmodes(JoystickInterpreter):
     def start(self):
         rospy.loginfo("Starting {0}".format(self))        
         self.stopper = threading.Event()
-        self.publisher_thread = threading.Thread(target=self.loop_message)
-        self.publisher_thread.start()
+        # self.publisher_thread = threading.Thread(target=self.loop_message)
+        # self.publisher_thread.start()
 
-    def loop_message(self):
-        while not self.stopper.is_set() and not rospy.is_shutdown():
-            rospy.sleep(rospy.Duration(0.2))
-            # #print "active: {0}. previously_active: {1}".format(self.active, self.previously_active)
-            # if self.active:
-            #     self.cmd_vel.publish(self.twist)
-            #     rospy.sleep(rospy.Duration(0.2))
-            
-            # if self.previously_active and not self.active:
-            #     self.cmd_vel.publish(Twist())
+        self.timer = rospy.Timer(rospy.Duration(0.2), self.publish_messsage, oneshot=False)
 
-            # self.previously_active = self.active
+    def publish_messsage(self, *args, **kwargs):
+        #print "active: {0}. previously_active: {1}".format(self.active, self.previously_active)
+        if self.active:
+            self.cmd_vel.publish(self.twist)
+        
+        if self.previously_active and not self.active:
+            self.cmd_vel.publish(Twist())
+
+        self.previously_active = self.active
 
     def process(self, joystick_msg):
         pushed_buttons = [index for index, pressed in enumerate(joystick_msg.buttons) if pressed]
@@ -171,10 +171,12 @@ class BaseControlInterpreterWithSubmodes(JoystickInterpreter):
         rospy.loginfo("Stopping {0}".format(self))
         self.twist = Twist() #Empty twist, everything is zero
         self.cmd_vel.publish(self.twist)
-        if self.stopper: 
-            self.stopper.set()
-        if self.publisher_thread:
-            self.publisher_thread.join()
+        # if self.stopper: 
+        #     self.stopper.set()
+        # if self.publisher_thread:
+        #     self.publisher_thread.join()
+
+        self.timer.shutdown()
 
     def __str__(self):
         return "Base"
