@@ -5,6 +5,7 @@ class JoystickInterpreter(object):
     """Converts joystick values to some other message type and publishes that"""
 
     def __init__(self):
+        self.timer = None
         pass
 
     def start(self):
@@ -18,6 +19,10 @@ class JoystickInterpreter(object):
     def stop(self):
         """Publish a message to stop the current mode. For the base, this means sending a zero speed to /cmd_vel, so the robot does not run away"""
         pass
+
+    def repeat_message(self):
+        """Publish a predefined message again, e.g. to keep publishing at a certain rate even though the joystick does not update"""
+        raise NotImplementedError("Subclasses must implement this function")
 
     def __str__(self):
         return "Undefined JoystickInterpreter"

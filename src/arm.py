@@ -61,9 +61,7 @@ class ArmControlInterpreter(JoystickInterpreter):
         self.open_close_toggle = self.settings["open_close"]
 
     def start(self):
-        self.stopper = threading.Event()
-        self.publisher_thread = threading.Thread(target=self.loop_message)
-        self.publisher_thread.start()
+        self.timer = rospy.Timer(rospy.Duration(0.1), self.repeat_messsage, oneshot=False)
 
         rospy.loginfo("Arm is waiting for server...")
         connected = self.arm_client.wait_for_server(timeout=rospy.Duration(1.0))
@@ -72,10 +70,13 @@ class ArmControlInterpreter(JoystickInterpreter):
         else:
             rospy.logerr("Arm server not (yet) found. Commands may be delayed or not arrive at all.")
 
-    def loop_message(self):
-        while not self.stopper.is_set() and not rospy.is_shutdown():
-            self.arm_velocity_publisher.publish(self.twist)
-            rospy.sleep(rospy.Duration(0.1))
+    def repeat_message(self, *args, **kwargs):
+        self.arm_velocity_publisher.publish(self.twist)
+
+    def stop(self):
+        self.timer.shutdown()
+        self.twist = Twist() #Empty twist, everything is zero
+        self.arm_velocity_publisher.publish(self.twist)
 
     def process(self, joystick_msg):
         if not self.previous_button_state:
@@ -126,11 +127,6 @@ class ArmControlInterpreter(JoystickInterpreter):
         self.previous_button_state = joystick_msg.buttons
         self.previous_twist = self.twist
 
-    def stop(self):
-        self.twist = Twist() #Empty twist, everything is zero
-        self.arm_velocity_publisher.publish(self.twist)
-        self.stopper.set()
-        self.publisher_thread.join()
 
     def __str__(self):
         return "{0} arm".format(self.side).capitalize()
@@ -216,9 +212,7 @@ class ArmControlInterpreterWithSubmodes(JoystickInterpreter):
             rospy.logwarn("Could not find settings for angular submode of arms")
 
     def start(self):
-        self.stopper = threading.Event()
-        self.publisher_thread = threading.Thread(target=self.loop_message)
-        self.publisher_thread.start()
+        self.timer = rospy.Timer(rospy.Duration(0.1), self.repeat_message, oneshot=False)
 
         rospy.loginfo("Arm is waiting for server...")
         connected = self.arm_client.wait_for_server(timeout=rospy.Duration(1.0))
@@ -227,10 +221,13 @@ class ArmControlInterpreterWithSubmodes(JoystickInterpreter):
         else:
             rospy.logerr("Arm server not (yet) found. Commands may be delayed or not arrive at all.")
 
-    def loop_message(self):
-        while not self.stopper.is_set() and not rospy.is_shutdown():
-            self.arm_velocity_publisher.publish(self.twist)
-            rospy.sleep(rospy.Duration(0.1))
+    def repeat_message(self, *args, **kwargs):
+        self.arm_velocity_publisher.publish(self.twist)
+
+    def stop(self):
+        self.timer.shutdown()
+        self.twist = Twist() #Empty twist, everything is zero
+        self.arm_velocity_publisher.publish(self.twist)
 
     def process(self, joystick_msg):
         if not self.previous_button_state:
@@ -272,12 +269,6 @@ class ArmControlInterpreterWithSubmodes(JoystickInterpreter):
 
         self.previous_button_state = joystick_msg.buttons
 
-    def stop(self):
-        self.twist = Twist() #Empty twist, everything is zero
-        self.arm_velocity_publisher.publish(self.twist)
-        self.stopper.set()
-        self.publisher_thread.join()
-
     def __str__(self):
         return "{0} arm".format(self.side).capitalize()
 
@@ -305,16 +296,23 @@ class ArmsControlInterpreter(JoystickInterpreter):
         self.previous_button_state = []
 
     def start(self):
-        self.stopper = threading.Event()
-        self.publisher_thread = threading.Thread(target=self.loop_message)
-        self.publisher_thread.start()
+        self.timer = rospy.Timer(rospy.Duration(0.1), self.repeat_messsage, oneshot=False)
 
-        self.arm_client.wait_for_server()
+        rospy.loginfo("Arm is waiting for server...")
+        connected = self.arm_client.wait_for_server(timeout=rospy.Duration(1.0))
+        if connected: 
+            rospy.loginfo("Arm server found")
+        else:
+            rospy.logerr("Arm server not (yet) found. Commands may be delayed or not arrive at all.")
 
-    def loop_message(self):
-        while not self.stopper.is_set() and not rospy.is_shutdown():
-            self.selected_arm_publisher.publish(self.twist)
-            rospy.sleep(rospy.Duration(0.1))
+    def repeat_message(self, *args, **kwargs):
+        self.selected_arm_publisher.publish(self.twist)
+
+    def stop(self):
+        self.timer.shutdown()
+        self.twist = Twist() #Empty twist, everything is zero
+        self.left_arm_velocity_publisher.publish(self.twist)
+        self.right_arm_velocity_publisher.publish(self.twist)
 
     def process(self, joystick_msg):
         if not self.previous_button_state:
@@ -363,12 +361,6 @@ class ArmsControlInterpreter(JoystickInterpreter):
 
         self.previous_button_state = joystick_msg.buttons
 
-    def stop(self):
-        self.twist = Twist() #Empty twist, everything is zero
-        self.left_arm_velocity_publisher.publish(self.twist)
-        self.right_arm_velocity_publisher.publish(self.twist)
-        self.stopper.set()
-        self.publisher_thread.join()
 
     def __str__(self):
         return "Arms"

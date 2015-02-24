@@ -54,36 +54,34 @@ class JoystickTeleop(object):
             else:
                 base_mode = base.BaseControlInterpreter(settings['base'])
 
-        self.interpreters += [base_mode]
+        # import ipdb; ipdb.set_trace()
+        if settings.has_key('neck'):
+            if base_mode:
+                if settings['neck'].has_key("tilt_simple"):
+                    neck_simple = neck.SimpleNeckController(settings['neck'])
+                    neck_predef = neck.NeckPredefinedController(settings['neck'])
+                    self.interpreters += [interpreter.CombinedInterpreter(base_mode, neck_simple, neck_predef)]
+                else:
+                    self.interpreters += [base_mode]
+                    self.interpreters += [neck.NeckControlInterpreter(settings['neck'])]
+        else:
+            self.interpreters += [base_mode]
 
-        # # import ipdb; ipdb.set_trace()
-        # if settings.has_key('neck'):
-        #     if base_mode:
-        #         if settings['neck'].has_key("tilt_simple"):
-        #             neck_simple = neck.SimpleNeckController(settings['neck'])
-        #             neck_predef = neck.NeckPredefinedController(settings['neck'])
-        #             self.interpreters += [interpreter.CombinedInterpreter(base_mode, neck_simple, neck_predef)]
-        #         else:
-        #             self.interpreters += [base_mode]
-        #             self.interpreters += [neck.NeckControlInterpreter(settings['neck'])]
-        # else:
-        #     self.interpreters += [base_mode]
+        if settings.has_key('arms'):
+            if settings['arms'].has_key('submodes'):
+                left = arm.ArmControlInterpreterWithSubmodes(settings['arms'], side="left")
+                # right += [arm.ArmControlInterpreterWithSubmodes(settings['arms'], side="right")]
+                if settings['neck'].has_key("tilt_simple"):
+                    neck_simple = neck.SimpleNeckController(settings['neck'])
+                    neck_predef = neck.NeckPredefinedController(settings['neck'])
+                    self.interpreters += [interpreter.CombinedInterpreter(left, neck_simple, neck_predef)]
+                    # self.interpreters += [interpreter.CombinedInterpreter(right, neck_simple)]
+            else:
+                self.interpreters += [arm.ArmControlInterpreter(settings['arms'], side="left")]
+                # self.interpreters += [arm.ArmControlInterpreter(settings['arms'], side="right")]
 
-        # if settings.has_key('arms'):
-        #     if settings['arms'].has_key('submodes'):
-        #         left = arm.ArmControlInterpreterWithSubmodes(settings['arms'], side="left")
-        #         # right += [arm.ArmControlInterpreterWithSubmodes(settings['arms'], side="right")]
-        #         if settings['neck'].has_key("tilt_simple"):
-        #             neck_simple = neck.SimpleNeckController(settings['neck'])
-        #             neck_predef = neck.NeckPredefinedController(settings['neck'])
-        #             self.interpreters += [interpreter.CombinedInterpreter(left, neck_simple, neck_predef)]
-        #             # self.interpreters += [interpreter.CombinedInterpreter(right, neck_simple)]
-        #     else:
-        #         self.interpreters += [arm.ArmControlInterpreter(settings['arms'], side="left")]
-        #         # self.interpreters += [arm.ArmControlInterpreter(settings['arms'], side="right")]
-
-        # if settings.has_key('lift'):
-        #     self.interpreters += [lift.LiftControlInterpreter(settings['lift'])]
+        if settings.has_key('lift'):
+            self.interpreters += [lift.LiftControlInterpreter(settings['lift'])]
 
 
         self.interpreter_names = [str(inter) for inter in self.interpreters]
@@ -224,11 +222,7 @@ if __name__ == "__main__":
         print "Optionally, specify a mapping"
 
     teleop = JoystickTeleop(settings)
-    # teleop.publish_available_modes()
-    # teleop.publish_current_mode()
-
-    # import time
-    # while not rospy.is_shutdown():
-    #     time.sleep(0.1)
+    teleop.publish_available_modes()
+    teleop.publish_current_mode()
 
     rospy.spin()
