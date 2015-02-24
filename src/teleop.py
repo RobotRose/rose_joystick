@@ -123,9 +123,9 @@ class JoystickTeleop(object):
 
         self._interpreter = value
 
-        # #Start the current one
-        # if self._interpreter:
-        #     self._interpreter.start()
+        #Start the current one
+        if self._interpreter:
+            self._interpreter.start()
 
         self.publish_current_mode() 
         self.publish_available_modes()
