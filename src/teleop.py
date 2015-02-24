@@ -43,7 +43,6 @@ class JoystickTeleop(object):
 
         self.deadzone = settings.get("deadzone", 0.05)
     
-        # import ipdb; ipdb.set_trace()
         self.interpreters = []
 
         base_mode = None
@@ -52,9 +51,8 @@ class JoystickTeleop(object):
             if settings['base'].has_key('submodes'):
                 base_mode = base.BaseControlInterpreterWithSubmodes(settings['base'])
             else:
-                base_mode = base.BaseControlInterpreter(settings['base'])      
+                base_mode = base.BaseControlInterpreter(settings['base'])
 
-        # import ipdb; ipdb.set_trace()
         if settings.has_key('neck'):
             if base_mode:
                 if settings['neck'].has_key("tilt_simple"):
@@ -108,8 +106,6 @@ class JoystickTeleop(object):
 
 
     def publish_available_modes(self):
-        #print modes
-        #import ipdb;ipdb.set_trace()
         modes = stringlist(self.interpreter_names)
         self.available_modes_publisher.publish(modes)
 
@@ -168,7 +164,6 @@ class JoystickTeleop(object):
 
         joystick_msg.axes = [apply_deadzone(value) for value in joystick_msg.axes]
 
-        # import ipdb; ipdb.set_trace()
         #initialize with first value we get
         if not self.previous_button_state:
             self.previous_button_state = joystick_msg.buttons

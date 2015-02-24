@@ -22,21 +22,16 @@ class BaseControlInterpreter(JoystickInterpreter):
         self.twist = Twist()
 
     def start(self):
-        self.stopper = threading.Event()
-        self.publisher_thread = threading.Thread(target=self.loop_message)
-        self.publisher_thread.start()
+        self.timer = rospy.Timer(rospy.Duration(0.2), self.repeat_messsage, oneshot=False)
 
-    def loop_message(self):
-        while not self.stopper.is_set() and not rospy.is_shutdown():
-            #print "active: {0}. previously_active: {1}".format(self.active, self.previously_active)
-            if self.active:
-                self.cmd_vel.publish(self.twist)
-                rospy.sleep(rospy.Duration(0.2))
-            
-            if self.previously_active and not self.active:
-                self.cmd_vel.publish(Twist())
+    def repeat_messsage(self, *args, **kwargs):
+        if self.active:
+            self.cmd_vel.publish(self.twist)
+        
+        if self.previously_active and not self.active:
+            self.cmd_vel.publish(Twist())
 
-            self.previously_active = self.active
+        self.previously_active = self.active
 
     def process(self, joystick_msg):
         self.twist = Twist()
@@ -69,12 +64,11 @@ class BaseControlInterpreter(JoystickInterpreter):
                         abs(self.twist.angular.z) > 0.001)
 
     def stop(self):
+        rospy.loginfo("Stopping {0}".format(self))
         self.twist = Twist() #Empty twist, everything is zero
+        self.timer.shutdown()
+        
         self.cmd_vel.publish(self.twist)
-        if self.stopper: 
-            self.stopper.set()
-        if self.publisher_thread:
-            self.publisher_thread.join()
 
     def __str__(self):
         return "Base"
@@ -125,8 +119,6 @@ class BaseControlInterpreterWithSubmodes(JoystickInterpreter):
 
         self.settings = settings
 
-        self.stopper = None
-        self.publisher_thread = None
         self.twist = Twist()
         self.active = False
         self.previously_active = False
@@ -137,22 +129,17 @@ class BaseControlInterpreterWithSubmodes(JoystickInterpreter):
                          tuple(sorted(strafing.enable_buttons)):strafing}
 
     def start(self):
-        rospy.loginfo("Starting {0}".format(self))        
-        self.stopper = threading.Event()
-        self.publisher_thread = threading.Thread(target=self.loop_message)
-        self.publisher_thread.start()
+        rospy.loginfo("Starting {0}".format(self))
+        self.timer = rospy.Timer(rospy.Duration(0.2), self.repeat_messsage, oneshot=False)
 
-    def loop_message(self):
-        while not self.stopper.is_set() and not rospy.is_shutdown():
-            #print "active: {0}. previously_active: {1}".format(self.active, self.previously_active)
-            if self.active:
-                self.cmd_vel.publish(self.twist)
-                rospy.sleep(rospy.Duration(0.2))
-            
-            if self.previously_active and not self.active:
-                self.cmd_vel.publish(Twist())
+    def repeat_messsage(self, *args, **kwargs):
+        if self.active:
+            self.cmd_vel.publish(self.twist)
+        
+        if self.previously_active and not self.active:
+            self.cmd_vel.publish(Twist())
 
-            self.previously_active = self.active
+        self.previously_active = self.active
 
     def process(self, joystick_msg):
         pushed_buttons = [index for index, pressed in enumerate(joystick_msg.buttons) if pressed]
@@ -169,11 +156,9 @@ class BaseControlInterpreterWithSubmodes(JoystickInterpreter):
     def stop(self):
         rospy.loginfo("Stopping {0}".format(self))
         self.twist = Twist() #Empty twist, everything is zero
+        self.timer.shutdown()
+        
         self.cmd_vel.publish(self.twist)
-        if self.stopper: 
-            self.stopper.set()
-        if self.publisher_thread:
-            self.publisher_thread.join()
 
     def __str__(self):
         return "Base"

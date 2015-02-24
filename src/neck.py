@@ -31,11 +31,9 @@ class NeckControlInterpreter(JoystickInterpreter):
 
     def process(self, joystick_msg):
         rospy.logdebug("Neck processing joystick_msg")
-        #import ipdb;ipdb.set_trace()
+
         new_pan = self.pan + joystick_msg.axes[self.settings["pan"]["axis"]] * self.settings["pan"]["scale"]
         new_tilt = self.tilt + joystick_msg.axes[self.settings["tilt"]["axis"]] * self.settings["tilt"]["scale"]
-        
-        #rospy.loginfo("new_pan={0} = self.pan={1} + (joystick_msg.axes[5]={2} / self.scaling_factor={3})".format(new_pan, self.pan, joystick_msg.axes[5], self.scaling_factor))
 
         self.pan_publisher.publish(new_pan)
         self.tilt_publisher.publish(new_tilt)
@@ -73,7 +71,6 @@ class NeckPredefinedController(JoystickInterpreter):
             self.pan_publisher.publish(new_pan)
             self.tilt_publisher.publish(new_tilt)
 
-        #import ipdb;ipdb.set_trace()
         if not self.previous_button_state:
             self.previous_button_state = joystick_msg.buttons
 
@@ -87,19 +84,17 @@ class NeckPredefinedController(JoystickInterpreter):
             apply_pose(pose)
 
         changed_buttons = [curr != prev for (curr, prev) in zip(joystick_msg.buttons, self.previous_button_state)]
-        # print "Changed buttons: {0}".format(changed_buttons)
+
         pushed_buttons  = [index for index, changed in enumerate(changed_buttons) if changed and joystick_msg.buttons[index]]
         if any(pushed_buttons):
             first_pushed_button = pushed_buttons[0]
-            # print "Pushed buttons: {0}. first_pushed_button = {1}".format(pushed_buttons, first_pushed_button)
+
             poses = self.settings["predefined_poses"]
             try:
-                # import ipdb; ipdb.set_trace()
                 pushed_pose = [pose for pose in poses.values() if int(pose["button"]) == first_pushed_button][0]
                 apply_pose(pushed_pose)
             except IndexError, e:
                 pass
-                # rospy.logwarn("No pose connected to button index {0}".format(first_pushed_button))
 
         self.previous_button_state = joystick_msg.buttons
 
@@ -129,7 +124,6 @@ class SimpleNeckController(JoystickInterpreter):
         self.tilt = msg.current_pos
 
     def process(self, joystick_msg):
-        #import ipdb;ipdb.set_trace()
         if self.settings.has_key("pan_simple"):
             cmd_tilt = joystick_msg.axes[self.settings["tilt_simple"]["axis"]]
             scale = self.settings["tilt_simple"]["scale"]
@@ -137,7 +131,6 @@ class SimpleNeckController(JoystickInterpreter):
 
             if abs(new_tilt - self.tilt) > 0.1 and abs(cmd_tilt) > 0.1:
                 self.tilt_publisher.publish(new_tilt)
-                #rospy.loginfo("new_tilt={0:.3f} = self.tilt={1:.3f} + (cmd_tilt={2:.3f} * scale={3:.3f})".format(new_tilt, self.tilt, cmd_tilt, scale))
 
         if self.settings.has_key("pan_simple"):
             cmd_pan = joystick_msg.axes[self.settings["pan_simple"]["axis"]]
