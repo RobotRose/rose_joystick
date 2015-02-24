@@ -21,8 +21,6 @@ def twist_is_zero(twist):
                 twist.angular.y == 0.0,
                 twist.angular.y == 0.0]
     all_zero = all(zeros)
-    # if not all_zero:
-    #     print "{0} != 0".format(twist)
     return all_zero
 
 class ArmControlInterpreter(JoystickInterpreter):
@@ -141,10 +139,6 @@ class ArmLinearMode(Submode):
         twist.linear.y = joystick_msg.axes[self.settings["linear_y"]["axis"]] * self.settings["linear_y"]["scale"]
         twist.linear.z = joystick_msg.axes[self.settings["linear_z"]["axis"]] * self.settings["linear_z"]["scale"]
         return twist
-
-        # self.twist.angular.x = joystick_msg.axes[self.settings["angular_x"]["axis"]] * self.settings["angular_x"]["scale"] if "angular_x" in self.settings else 0.0
-        # self.twist.angular.y = joystick_msg.axes[self.settings["angular_y"]["axis"]] * self.settings["angular_y"]["scale"] if "angular_y" in self.settings else 0.0
-        # self.twist.angular.z = joystick_msg.axes[self.settings["angular_z"]["axis"]] * self.settings["angular_z"]["scale"] if "angular_z" in self.settings else 0.0
 
     def __str__(self):
         return "Linear"
