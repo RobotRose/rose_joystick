@@ -37,65 +37,66 @@ class JoystickTeleop(object):
     def __init__(self, settings):
         """Initialize a new JoystickTeleop. 
         @param settings is a parsed yaml file"""
-        self.mode_publisher = rospy.Publisher("~mode", String, latch=True)
-        self.switch_joystick_mode_service = rospy.Service("~set_mode", switch_joystick_mode, self.handle_set_joystick_mode)
-        self.available_modes_publisher = rospy.Publisher("~available_modes", stringlist, latch=True)
+        pass
+        # self.mode_publisher = rospy.Publisher("~mode", String, latch=True)
+        # self.switch_joystick_mode_service = rospy.Service("~set_mode", switch_joystick_mode, self.handle_set_joystick_mode)
+        # self.available_modes_publisher = rospy.Publisher("~available_modes", stringlist, latch=True)
 
-        self.deadzone = settings.get("deadzone", 0.05)
+        # self.deadzone = settings.get("deadzone", 0.05)
     
-        # import ipdb; ipdb.set_trace()
-        self.interpreters = []
+        # # import ipdb; ipdb.set_trace()
+        # self.interpreters = []
 
-        base_mode = None
+        # base_mode = None
 
-        if settings.has_key('base'):
-            if settings['base'].has_key('submodes'):
-                base_mode = base.BaseControlInterpreterWithSubmodes(settings['base'])
-            else:
-                base_mode = base.BaseControlInterpreter(settings['base'])      
+        # if settings.has_key('base'):
+        #     if settings['base'].has_key('submodes'):
+        #         base_mode = base.BaseControlInterpreterWithSubmodes(settings['base'])
+        #     else:
+        #         base_mode = base.BaseControlInterpreter(settings['base'])      
 
-        # import ipdb; ipdb.set_trace()
-        if settings.has_key('neck'):
-            if base_mode:
-                if settings['neck'].has_key("tilt_simple"):
-                    neck_simple = neck.SimpleNeckController(settings['neck'])
-                    neck_predef = neck.NeckPredefinedController(settings['neck'])
-                    self.interpreters += [interpreter.CombinedInterpreter(base_mode, neck_simple, neck_predef)]
-                else:
-                    self.interpreters += [base_mode]
-                    self.interpreters += [neck.NeckControlInterpreter(settings['neck'])]
-        else:
-            self.interpreters += [base_mode]
+        # # import ipdb; ipdb.set_trace()
+        # if settings.has_key('neck'):
+        #     if base_mode:
+        #         if settings['neck'].has_key("tilt_simple"):
+        #             neck_simple = neck.SimpleNeckController(settings['neck'])
+        #             neck_predef = neck.NeckPredefinedController(settings['neck'])
+        #             self.interpreters += [interpreter.CombinedInterpreter(base_mode, neck_simple, neck_predef)]
+        #         else:
+        #             self.interpreters += [base_mode]
+        #             self.interpreters += [neck.NeckControlInterpreter(settings['neck'])]
+        # else:
+        #     self.interpreters += [base_mode]
 
-        if settings.has_key('arms'):
-            if settings['arms'].has_key('submodes'):
-                left = arm.ArmControlInterpreterWithSubmodes(settings['arms'], side="left")
-                # right += [arm.ArmControlInterpreterWithSubmodes(settings['arms'], side="right")]
-                if settings['neck'].has_key("tilt_simple"):
-                    neck_simple = neck.SimpleNeckController(settings['neck'])
-                    neck_predef = neck.NeckPredefinedController(settings['neck'])
-                    self.interpreters += [interpreter.CombinedInterpreter(left, neck_simple, neck_predef)]
-                    # self.interpreters += [interpreter.CombinedInterpreter(right, neck_simple)]
-            else:
-                self.interpreters += [arm.ArmControlInterpreter(settings['arms'], side="left")]
-                # self.interpreters += [arm.ArmControlInterpreter(settings['arms'], side="right")]
+        # if settings.has_key('arms'):
+        #     if settings['arms'].has_key('submodes'):
+        #         left = arm.ArmControlInterpreterWithSubmodes(settings['arms'], side="left")
+        #         # right += [arm.ArmControlInterpreterWithSubmodes(settings['arms'], side="right")]
+        #         if settings['neck'].has_key("tilt_simple"):
+        #             neck_simple = neck.SimpleNeckController(settings['neck'])
+        #             neck_predef = neck.NeckPredefinedController(settings['neck'])
+        #             self.interpreters += [interpreter.CombinedInterpreter(left, neck_simple, neck_predef)]
+        #             # self.interpreters += [interpreter.CombinedInterpreter(right, neck_simple)]
+        #     else:
+        #         self.interpreters += [arm.ArmControlInterpreter(settings['arms'], side="left")]
+        #         # self.interpreters += [arm.ArmControlInterpreter(settings['arms'], side="right")]
 
-        if settings.has_key('lift'):
-            self.interpreters += [lift.LiftControlInterpreter(settings['lift'])]
+        # if settings.has_key('lift'):
+        #     self.interpreters += [lift.LiftControlInterpreter(settings['lift'])]
 
 
-        self.interpreter_names = [str(inter) for inter in self.interpreters]
-        self._interpreter = None
+        # self.interpreter_names = [str(inter) for inter in self.interpreters]
+        # self._interpreter = None
 
-        self.next_btn = settings.get('next_mode', None)
-        self.previous_btn = settings.get('previous_mode', -1)
+        # self.next_btn = settings.get('next_mode', None)
+        # self.previous_btn = settings.get('previous_mode', -1)
         
-        self.previous_button_state = []
+        # self.previous_button_state = []
 
-        joystick_topic = settings["topic"]
-        self.joystick_subscriber = rospy.Subscriber(joystick_topic, Joy, self.process_joystick)
+        # joystick_topic = settings["topic"]
+        # self.joystick_subscriber = rospy.Subscriber(joystick_topic, Joy, self.process_joystick)
 
-        self.interpreter = self.interpreters[0]
+        # self.interpreter = self.interpreters[0]
 
 
     @property
@@ -222,7 +223,11 @@ if __name__ == "__main__":
         print "Optionally, specify a mapping"
 
     teleop = JoystickTeleop(settings)
-    teleop.publish_available_modes()
-    teleop.publish_current_mode()
+    # teleop.publish_available_modes()
+    # teleop.publish_current_mode()
+
+    # import time
+    # while not rospy.is_shutdown():
+    #     time.sleep(0.1)
 
     rospy.spin()
