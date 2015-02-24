@@ -61,7 +61,7 @@ class ArmControlInterpreter(JoystickInterpreter):
         self.open_close_toggle = self.settings["open_close"]
 
     def start(self):
-        self.timer = rospy.Timer(rospy.Duration(0.1), self.repeat_messsage, oneshot=False)
+        self.timer = rospy.Timer(rospy.Duration(0.1), self.repeat_message, oneshot=False)
 
         rospy.loginfo("Arm is waiting for server...")
         connected = self.arm_client.wait_for_server(timeout=rospy.Duration(1.0))
@@ -285,7 +285,7 @@ class ArmsControlInterpreter(JoystickInterpreter):
         self.previous_button_state = []
 
     def start(self):
-        self.timer = rospy.Timer(rospy.Duration(0.1), self.repeat_messsage, oneshot=False)
+        self.timer = rospy.Timer(rospy.Duration(0.1), self.repeat_message, oneshot=False)
 
         rospy.loginfo("Arm is waiting for server...")
         connected = self.arm_client.wait_for_server(timeout=rospy.Duration(1.0))
