@@ -37,10 +37,9 @@ class JoystickTeleop(object):
     def __init__(self, settings):
         """Initialize a new JoystickTeleop. 
         @param settings is a parsed yaml file"""
-        pass
-        # self.mode_publisher = rospy.Publisher("~mode", String, latch=True)
-        # self.switch_joystick_mode_service = rospy.Service("~set_mode", switch_joystick_mode, self.handle_set_joystick_mode)
-        # self.available_modes_publisher = rospy.Publisher("~available_modes", stringlist, latch=True)
+        self.mode_publisher = rospy.Publisher("~mode", String, latch=True)
+        self.switch_joystick_mode_service = rospy.Service("~set_mode", switch_joystick_mode, self.handle_set_joystick_mode)
+        self.available_modes_publisher = rospy.Publisher("~available_modes", stringlist, latch=True)
 
         # self.deadzone = settings.get("deadzone", 0.05)
     
