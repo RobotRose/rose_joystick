@@ -22,10 +22,9 @@ class BaseControlInterpreter(JoystickInterpreter):
         self.twist = Twist()
 
     def start(self):
-        pass
-        # self.stopper = threading.Event()
-        # self.publisher_thread = threading.Thread(target=self.loop_message)
-        # self.publisher_thread.start()
+        self.stopper = threading.Event()
+        self.publisher_thread = threading.Thread(target=self.loop_message)
+        self.publisher_thread.start()
 
     def loop_message(self):
         while not self.stopper.is_set() and not rospy.is_shutdown():
@@ -138,10 +137,11 @@ class BaseControlInterpreterWithSubmodes(JoystickInterpreter):
                          tuple(sorted(strafing.enable_buttons)):strafing}
 
     def start(self):
-        rospy.loginfo("Starting {0}".format(self))        
-        self.stopper = threading.Event()
-        self.publisher_thread = threading.Thread(target=self.loop_message)
-        self.publisher_thread.start()
+        pass
+        # rospy.loginfo("Starting {0}".format(self))        
+        # self.stopper = threading.Event()
+        # self.publisher_thread = threading.Thread(target=self.loop_message)
+        # self.publisher_thread.start()
 
     def loop_message(self):
         while not self.stopper.is_set() and not rospy.is_shutdown():
