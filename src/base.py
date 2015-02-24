@@ -22,22 +22,22 @@ class BaseControlInterpreter(JoystickInterpreter):
         self.twist = Twist()
 
     def start(self):
-        self.stopper = threading.Event()
-        self.publisher_thread = threading.Thread(target=self.loop_message)
-        self.publisher_thread.start()
+        pass
+        # self.stopper = threading.Event()
+        # self.publisher_thread = threading.Thread(target=self.loop_message)
+        # self.publisher_thread.start()
 
     def loop_message(self):
-        pass
-        # while not self.stopper.is_set() and not rospy.is_shutdown():
-        #     #print "active: {0}. previously_active: {1}".format(self.active, self.previously_active)
-        #     if self.active:
-        #         self.cmd_vel.publish(self.twist)
-        #         rospy.sleep(rospy.Duration(0.2))
+        while not self.stopper.is_set() and not rospy.is_shutdown():
+            #print "active: {0}. previously_active: {1}".format(self.active, self.previously_active)
+            if self.active:
+                self.cmd_vel.publish(self.twist)
+                rospy.sleep(rospy.Duration(0.2))
             
-        #     if self.previously_active and not self.active:
-        #         self.cmd_vel.publish(Twist())
+            if self.previously_active and not self.active:
+                self.cmd_vel.publish(Twist())
 
-        #     self.previously_active = self.active
+            self.previously_active = self.active
 
     def process(self, joystick_msg):
         self.twist = Twist()
