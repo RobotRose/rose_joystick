@@ -41,12 +41,12 @@ class JoystickTeleop(object):
         self.switch_joystick_mode_service = rospy.Service("~set_mode", switch_joystick_mode, self.handle_set_joystick_mode)
         self.available_modes_publisher = rospy.Publisher("~available_modes", stringlist, latch=True)
 
-        # self.deadzone = settings.get("deadzone", 0.05)
+        self.deadzone = settings.get("deadzone", 0.05)
     
-        # # import ipdb; ipdb.set_trace()
-        # self.interpreters = []
+        # import ipdb; ipdb.set_trace()
+        self.interpreters = []
 
-        # base_mode = None
+        base_mode = None
 
         # if settings.has_key('base'):
         #     if settings['base'].has_key('submodes'):
@@ -84,18 +84,18 @@ class JoystickTeleop(object):
         #     self.interpreters += [lift.LiftControlInterpreter(settings['lift'])]
 
 
-        # self.interpreter_names = [str(inter) for inter in self.interpreters]
-        # self._interpreter = None
+        self.interpreter_names = [str(inter) for inter in self.interpreters]
+        self._interpreter = None
 
-        # self.next_btn = settings.get('next_mode', None)
-        # self.previous_btn = settings.get('previous_mode', -1)
+        self.next_btn = settings.get('next_mode', None)
+        self.previous_btn = settings.get('previous_mode', -1)
         
-        # self.previous_button_state = []
+        self.previous_button_state = []
 
-        # joystick_topic = settings["topic"]
-        # self.joystick_subscriber = rospy.Subscriber(joystick_topic, Joy, self.process_joystick)
+        joystick_topic = settings["topic"]
+        self.joystick_subscriber = rospy.Subscriber(joystick_topic, Joy, self.process_joystick)
 
-        # self.interpreter = self.interpreters[0]
+        self.interpreter = None#self.interpreters[0]
 
 
     @property
