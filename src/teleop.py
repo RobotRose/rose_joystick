@@ -48,11 +48,13 @@ class JoystickTeleop(object):
 
         base_mode = None
 
-        # if settings.has_key('base'):
-        #     if settings['base'].has_key('submodes'):
-        #         base_mode = base.BaseControlInterpreterWithSubmodes(settings['base'])
-        #     else:
-        #         base_mode = base.BaseControlInterpreter(settings['base'])      
+        if settings.has_key('base'):
+            if settings['base'].has_key('submodes'):
+                base_mode = base.BaseControlInterpreterWithSubmodes(settings['base'])
+            else:
+                base_mode = base.BaseControlInterpreter(settings['base'])
+
+        self.interpreters += [base_mode]
 
         # # import ipdb; ipdb.set_trace()
         # if settings.has_key('neck'):
@@ -95,7 +97,7 @@ class JoystickTeleop(object):
         joystick_topic = settings["topic"]
         self.joystick_subscriber = rospy.Subscriber(joystick_topic, Joy, self.process_joystick)
 
-        self.interpreter = None#self.interpreters[0]
+        self.interpreter = self.interpreters[0]
 
 
     @property
