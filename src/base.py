@@ -25,7 +25,6 @@ class BaseControlInterpreter(JoystickInterpreter):
         self.timer = rospy.Timer(rospy.Duration(0.2), self.repeat_messsage, oneshot=False)
 
     def repeat_messsage(self, *args, **kwargs):
-        #print "active: {0}. previously_active: {1}".format(self.active, self.previously_active)
         if self.active:
             self.cmd_vel.publish(self.twist)
         
@@ -134,7 +133,6 @@ class BaseControlInterpreterWithSubmodes(JoystickInterpreter):
         self.timer = rospy.Timer(rospy.Duration(0.2), self.repeat_messsage, oneshot=False)
 
     def repeat_messsage(self, *args, **kwargs):
-        #print "active: {0}. previously_active: {1}".format(self.active, self.previously_active)
         if self.active:
             self.cmd_vel.publish(self.twist)
         

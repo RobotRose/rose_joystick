@@ -238,13 +238,6 @@ class ArmControlInterpreterWithSubmodes(JoystickInterpreter):
 
         if (joystick_msg.buttons[self.open_close_toggle] != self.previous_button_state[self.open_close_toggle] and not joystick_msg.buttons[self.open_close_toggle]):
             pass
-            # goal.required_action = MOVE_GRIPPER
-            # if self.gripper_width == ArmControlInterpreterWithSubmodes.gripper_closed: #Open it!
-            #     rospy.loginfo("Opening gripper")
-            #     self.gripper_width      = ArmControlInterpreterWithSubmodes.gripper_open
-            # else: #Close it!
-            #     rospy.loginfo("Closing gripper")
-            #     self.gripper_width      = ArmControlInterpreterWithSubmodes.gripper_closed
         else:
             goal.required_action = SET_VELOCITY
 
@@ -262,10 +255,6 @@ class ArmControlInterpreterWithSubmodes(JoystickInterpreter):
         goal.required_gripper_width = self.gripper_width
 
         self.arm_client.send_goal(goal) #And wait... brings the rate down!
-        # if goal.required_action == MOVE_GRIPPER:
-        #     rospy.loginfo("Waiting for gripper to be closed/opened...")
-        #     self.arm_client.wait_for_result(rospy.Duration.from_sec(2.0))
-        #     rospy.loginfo("Gripper is closed/opened")
 
         self.previous_button_state = joystick_msg.buttons
 
