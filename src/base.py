@@ -87,7 +87,7 @@ class BaseSteeringMode(Submode):
         
         if joystick_msg.axes[self.settings["linear_x"]["axis"]] < -0.1: 
             inversion_multiplier = -1 #Somehow, this makes more sense...
-        self.twist.angular.z = joystick_msg.axes[self.settings["angular_z"]["axis"]] * self.settings["angular_z"]["scale"] * inversion_multiplier
+        self.twist.angular.z = joystick_msg.axes[self.settings["angular_z"]["axis"]] * self.settings["angular_z"]["scale"] * inversion_multiplier * throttle_scale
 
         return self.twist
 
