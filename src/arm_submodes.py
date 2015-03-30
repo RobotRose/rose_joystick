@@ -8,10 +8,9 @@ from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
 from arm_controller.msg import manipulateAction, manipulateGoal
 
-from interpreter import JoystickInterpreter, Submode
+from interpreter import Submode
+from arm import ArmControlInterpreter, MOVE_GRIPPER, SET_VELOCITY
 import threading
-MOVE_GRIPPER=2
-SET_VELOCITY=4
 
 class ArmLinearMode(Submode):
     def __init__(self, settings, parent):
@@ -41,36 +40,14 @@ class ArmAngularMode(Submode):
     def __str__(self):
         return "Rotation"
 
-class ArmControlInterpreterWithSubmodes(JoystickInterpreter):
-    arm_parameters = {"left"    :{"index":1, "topic":"/left_arm/cmd_vel"}, 
-                      "right"   :{"index":0, "topic":"/right_arm/cmd_vel"}}
-
-    gripper_open = 100
-    gripper_closed = 10
+class ArmControlInterpreterWithSubmodes(ArmControlInterpreter):
 
     def __init__(self, settings, side, linear_scaling_factor=0.1, angular_scaling_factor=0.1):
         """
         Instantiate a new ArmControlInterpreterWithSubmodes
         @param side side of the arm, i.e. left or right. Some parameters are determined based on this.
         """
-        super(ArmControlInterpreterWithSubmodes, self).__init__()
-
-        self.settings = settings
-
-        self.linear_scaling_factor = linear_scaling_factor
-        self.angular_scaling_factor = angular_scaling_factor
-
-        self.arm_client = actionlib.SimpleActionClient('/arms', arm_controller.msg.manipulateAction)
-
-        self.side = side
-        self.arm_index = ArmControlInterpreterWithSubmodes.arm_parameters[side]["index"]
-
-        self.twist = Twist()
-
-        self.previous_button_state = []
-
-        self.gripper_width = ArmControlInterpreterWithSubmodes.gripper_open
-        self.open_close_toggle = self.settings["open_close"]
+        super(ArmControlInterpreterWithSubmodes, self).__init__(settings, side, linear_scaling_factor, angular_scaling_factor)
 
         self.submodes = dict()
         try:
