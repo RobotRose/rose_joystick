@@ -45,11 +45,8 @@ class ArmControlInterpreter(JoystickInterpreter):
         self.arm_client = actionlib.SimpleActionClient('/arms', arm_controller.msg.manipulateAction)
 
         self.side = side
-        self.arm_velocity_publisher = rospy.Publisher(ArmControlInterpreter.arm_parameters[side]["topic"], Twist)
         self.arm_index = ArmControlInterpreter.arm_parameters[side]["index"]
 
-        self.stopper = None
-        self.publisher_thread = None
         self.twist = Twist()
 
         self.previous_button_state = []
@@ -57,24 +54,6 @@ class ArmControlInterpreter(JoystickInterpreter):
 
         self.gripper_width = ArmControlInterpreter.gripper_open
         self.open_close_toggle = self.settings["open_close"]
-
-    def start(self):
-        self.timer = rospy.Timer(rospy.Duration(0.1), self.repeat_message, oneshot=False)
-
-        rospy.loginfo("Arm is waiting for server...")
-        connected = self.arm_client.wait_for_server(timeout=rospy.Duration(1.0))
-        if connected: 
-            rospy.loginfo("Arm server found")
-        else:
-            rospy.logerr("Arm server not (yet) found. Commands may be delayed or not arrive at all.")
-
-    def repeat_message(self, *args, **kwargs):
-        self.arm_velocity_publisher.publish(self.twist)
-
-    def stop(self):
-        self.timer.shutdown()
-        self.twist = Twist() #Empty twist, everything is zero
-        self.arm_velocity_publisher.publish(self.twist)
 
     def process(self, joystick_msg):
         if not self.previous_button_state:

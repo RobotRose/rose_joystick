@@ -15,6 +15,8 @@ SET_VELOCITY=4
 
 class ArmsControlInterpreter(JoystickInterpreter):
     def __init__(self, settings, linear_scaling_factor=0.1, angular_scaling_factor=0.1):
+        """
+        Instantiate a new ArmsControlInterpreter to control multiple arms        """
         super(ArmsControlInterpreter, self).__init__()
 
         self.settings = settings
