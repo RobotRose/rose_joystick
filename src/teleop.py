@@ -18,7 +18,7 @@ import yaml
 import interpreter
 import base
 import neck
-import arm
+import arm, arm_submodes, arms
 import lift
 
 class CallIfChanged(object):
@@ -67,8 +67,8 @@ class JoystickTeleop(object):
 
         if settings.has_key('arms'):
             if settings['arms'].has_key('submodes'):
-                left = arm.ArmControlInterpreterWithSubmodes(settings['arms'], side="left")
-                # right += [arm.ArmControlInterpreterWithSubmodes(settings['arms'], side="right")]
+                left = arm_submodes.ArmControlInterpreterWithSubmodes(settings['arms'], side="left")
+                # right += [arm_submodes.ArmControlInterpreterWithSubmodes(settings['arms'], side="right")]
                 if settings['neck'].has_key("tilt_simple"):
                     neck_simple = neck.SimpleNeckController(settings['neck'])
                     neck_predef = neck.NeckPredefinedController(settings['neck'])
