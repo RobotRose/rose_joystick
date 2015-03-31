@@ -25,7 +25,7 @@ class ArmControlInterpreter(LatchingJoystickInterpreter):
         Instantiate a new ArmControlInterpreter
         @param side side of the arm, i.e. left or right. Some parameters are determined based on this.
         """
-        super(ArmControlInterpreter, self).__init__(rate=2.0)
+        super(ArmControlInterpreter, self).__init__(rate=0.4)
 
         self.settings = settings
 
@@ -50,6 +50,7 @@ class ArmControlInterpreter(LatchingJoystickInterpreter):
 
     def become_inactive(self):
         self.goal = manipulateGoal()
+        self.goal.required_action = SET_VELOCITY
         self.goal.arm = self.arm_index
         self.goal.required_velocity = Twist()
         self.goal.required_gripper_width = self.gripper_width
