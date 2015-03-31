@@ -3,7 +3,7 @@ import rospy
 
 from geometry_msgs.msg import Twist
 
-from interpreter import LatchingJoystickInterpreter, Submode
+from interpreter import LatchingJoystickInterpreter, Submode, twist_is_small
 import threading
 
 class BaseControlInterpreter(LatchingJoystickInterpreter):
@@ -19,13 +19,11 @@ class BaseControlInterpreter(LatchingJoystickInterpreter):
         self.publisher_thread = None
         self.twist = Twist()
 
-    def start(self):
-        self.timer = rospy.Timer(rospy.Duration(0.2), self.repeat_messsage, oneshot=False)
-
     def when_active(self):
         self.cmd_vel.publish(self.twist)
         
     def become_inactive(self):
+        self.twist = Twist() #Empty twist, everything is zero
         self.cmd_vel.publish(Twist())
 
     def process(self, joystick_msg, down, released, downed):
@@ -51,19 +49,7 @@ class BaseControlInterpreter(LatchingJoystickInterpreter):
             self.twist.angular.z = joystick_msg.axes[self.settings["angular_z"]["axis"]] * self.settings["angular_z"]["scale"]
             self.twist.linear.y = joystick_msg.axes[self.settings["linear_y"]["axis"]] * self.settings["linear_y"]["scale"] * throttle_scale
 
-        self.active = ( abs(self.twist.linear.x) > 0.001 or 
-                        abs(self.twist.linear.y) > 0.001 or 
-                        abs(self.twist.linear.z) > 0.001 or 
-                        abs(self.twist.angular.x) > 0.001 or 
-                        abs(self.twist.angular.y) > 0.001 or 
-                        abs(self.twist.angular.z) > 0.001)
-
-    def stop(self):
-        rospy.loginfo("Stopping {0}".format(self))
-        self.twist = Twist() #Empty twist, everything is zero
-        self.timer.shutdown()
-        
-        self.cmd_vel.publish(self.twist)
+        self.active = not twist_is_small(self.twist)
 
     def __str__(self):
         return "Base"
@@ -123,12 +109,13 @@ class BaseControlInterpreterWithSubmodes(LatchingJoystickInterpreter):
 
     def start(self):
         rospy.loginfo("Starting {0}".format(self))
-        self.timer = rospy.Timer(rospy.Duration(0.2), self.repeat_messsage, oneshot=False)
+        super(BaseControlInterpreterWithSubmodes, self).start()
 
     def when_active(self):
         self.cmd_vel.publish(self.twist)
         
     def become_inactive(self):
+        self.twist = Twist() #Empty twist, everything is zero
         self.cmd_vel.publish(Twist())
 
     def process(self, joystick_msg, down, released, downed):
@@ -141,13 +128,6 @@ class BaseControlInterpreterWithSubmodes(LatchingJoystickInterpreter):
             self.active = False
             rospy.loginfo("No submode activated by {1}. {0}".format([mode.usage() for mode in self.submodes.values()], down))
             self.twist = Twist()
-
-    def stop(self):
-        rospy.loginfo("Stopping {0}".format(self))
-        self.twist = Twist() #Empty twist, everything is zero
-        self.timer.shutdown()
-        
-        self.cmd_vel.publish(self.twist)
 
     def __str__(self):
         return "Base"

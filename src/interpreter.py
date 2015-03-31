@@ -1,4 +1,6 @@
 #! /usr/bin/env python
+import rospy
+
 from rose_joystick.srv import switch_joystick_mode, switch_joystick_modeResponse
 from rose_joystick.msg import available_modes
 
@@ -110,12 +112,39 @@ class ButtonState(object):
 
         return down, released, pressed
 
+def twist_is_zero(twist):
+    zeros = [   twist.linear.x  == 0.0,
+                twist.linear.y  == 0.0,
+                twist.linear.y  == 0.0,
+                twist.angular.x == 0.0,
+                twist.angular.y == 0.0,
+                twist.angular.y == 0.0]
+    all_zero = all(zeros)
+    return all_zero
+
+def twist_is_small(twist, threshold=0.001):
+    small =[ abs(twist.linear.x) <= threshold, 
+      abs(twist.linear.y) <= threshold, 
+      abs(twist.linear.z) <= threshold, 
+      abs(twist.angular.x) <= threshold, 
+      abs(twist.angular.y) <= threshold, 
+      abs(twist.angular.z) <= threshold]
+    all_small = all(small)
+    return all_small
 
 class LatchingJoystickInterpreter(JoystickInterpreter):
     def __init__(self):
         super(LatchingJoystickInterpreter, self).__init__()
         self.active = False
         self.previously_active = False
+
+    def start(self):
+        self.timer = rospy.Timer(rospy.Duration(0.2), self.repeat_messsage, oneshot=False)
+
+    def stop(self):
+        rospy.loginfo("Stopping {0}".format(self))
+        self.timer.shutdown()
+        self.become_inactive()
 
     def repeat_messsage(self, *args, **kwargs):
         if self.active:
