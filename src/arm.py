@@ -49,7 +49,6 @@ class ArmControlInterpreter(JoystickInterpreter):
 
         self.twist = Twist()
 
-        self.previous_button_state = []
         self.previous_twist = None
 
         self.gripper_width = ArmControlInterpreter.gripper_open
