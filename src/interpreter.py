@@ -36,10 +36,16 @@ class JoystickInterpreter(object):
         ((1,), (), (1,))
         >>> interpreter.derive_button_events([False, True, False]) #button at index 1 is still pressed, so not *just* pressed
         ((1,), (), ())
-        >>> interpreter.derive_button_events([False, False, False])
+        >>> interpreter.derive_button_events([False, False, False]) #Button 1 is no longer pressed, so released
         ((), (1,), ())
-        >>> interpreter.derive_button_events([False, False, False])
+        >>> interpreter.derive_button_events([False, False, False]) #No changes, no buttons are pressed
         ((), (), ())
+        >>> interpreter.derive_button_events([True, True, False])
+        ((0, 1), (), (0, 1))
+        >>> interpreter.derive_button_events([True, True, False])
+        ((0, 1), (), ())
+        >>> interpreter.derive_button_events([False, True, True])
+        ((1, 2), (0,), (2,))
         """
         if not self.previous_button_states:
             self.previous_button_states = button_states
