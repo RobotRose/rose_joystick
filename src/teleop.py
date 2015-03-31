@@ -88,7 +88,7 @@ class JoystickTeleop(object):
         self.next_btn = settings.get('next_mode', None)
         self.previous_btn = settings.get('previous_mode', -1)
         
-        self.previous_button_state = []
+        self.button_state = interpreter.ButtonState()
 
         joystick_topic = settings["topic"]
         self.joystick_subscriber = rospy.Subscriber(joystick_topic, Joy, self.process_joystick)
@@ -164,16 +164,12 @@ class JoystickTeleop(object):
 
         joystick_msg.axes = [apply_deadzone(value) for value in joystick_msg.axes]
 
-        #initialize with first value we get
-        if not self.previous_button_state:
-            self.previous_button_state = joystick_msg.buttons
-            if self.next_btn:
-                rospy.logerr("No joystick interpreter selected, press button {0} to switch to the next mode".format(self.next_btn+1)) #Real-life starts counting at 1
+        down, released, downed = self.button_state.derive_button_events(joystick_msg.buttons)
 
         switch_interpreter = 0
-        if self.next_btn != None and (joystick_msg.buttons[self.next_btn] != self.previous_button_state[self.next_btn] and not joystick_msg.buttons[self.next_btn]):
+        if self.next_btn != None and self.next_btn in released: 
             switch_interpreter = 1
-        if self.previous_btn != -1 and (joystick_msg.buttons[self.previous_btn] != self.previous_button_state[self.previous_btn] and not joystick_msg.buttons[self.previous_btn]):
+        if self.previous_btn != -1 and self.previous_btn in released:
             switch_interpreter = -1
 
         if switch_interpreter:
