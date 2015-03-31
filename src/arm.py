@@ -61,14 +61,14 @@ class ArmControlInterpreter(LatchingJoystickInterpreter):
         self.goal.arm   = self.arm_index
 
         if self.open_close_toggle in released:
-            pass
-            # self.goal.required_action = MOVE_GRIPPER
-            # if self.gripper_width == ArmControlInterpreter.gripper_closed: #Open it!
-            #     rospy.loginfo("Opening gripper")
-            #     self.gripper_width      = ArmControlInterpreter.gripper_open
-            # else: #Close it!
-            #     rospy.loginfo("Closing gripper")
-            #     self.gripper_width      = ArmControlInterpreter.gripper_closed
+            # pass
+            self.goal.required_action = MOVE_GRIPPER
+            if self.gripper_width == ArmControlInterpreter.gripper_closed: #Open it!
+                rospy.loginfo("Opening gripper")
+                self.gripper_width      = ArmControlInterpreter.gripper_open
+            else: #Close it!
+                rospy.loginfo("Closing gripper")
+                self.gripper_width      = ArmControlInterpreter.gripper_closed
         else:
             self.goal.required_action = SET_VELOCITY
             self.twist = Twist()
@@ -86,10 +86,10 @@ class ArmControlInterpreter(LatchingJoystickInterpreter):
 
         self.active = not twist_is_zero(self.twist)
         
-        # if self.goal.required_action == MOVE_GRIPPER:
-        #     rospy.loginfo("Waiting for gripper to be closed/opened...")
-        #     success = self.arm_client.send_goal_and_wait(self.goal, rospy.Duration.from_sec(2.0))
-        #     rospy.loginfo("Gripper is closed/opened")
+        if self.goal.required_action == MOVE_GRIPPER:
+            rospy.loginfo("Waiting for gripper to be closed/opened...")
+            success = self.arm_client.send_goal_and_wait(self.goal, rospy.Duration.from_sec(2.0))
+            rospy.loginfo("Gripper is closed/opened")
 
 
     def __str__(self):
