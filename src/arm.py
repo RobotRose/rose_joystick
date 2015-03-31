@@ -56,13 +56,12 @@ class ArmControlInterpreter(JoystickInterpreter):
         self.open_close_toggle = self.settings["open_close"]
 
     def process(self, joystick_msg):
-        if not self.previous_button_state:
-            self.previous_button_state = joystick_msg.buttons
+        down, released, downed = self.button_state.derive_button_events(joystick_msg.buttons)
         
         goal = manipulateGoal()
         goal.arm             = self.arm_index
 
-        if (joystick_msg.buttons[self.open_close_toggle] != self.previous_button_state[self.open_close_toggle] and not joystick_msg.buttons[self.open_close_toggle]):
+        if self.open_close_toggle in released:
             pass
             # goal.required_action = MOVE_GRIPPER
             # if self.gripper_width == ArmControlInterpreter.gripper_closed: #Open it!
@@ -101,7 +100,6 @@ class ArmControlInterpreter(JoystickInterpreter):
         #     success = self.arm_client.send_goal_and_wait(goal, rospy.Duration.from_sec(2.0))
         #     rospy.loginfo("Gripper is closed/opened")
 
-        self.previous_button_state = joystick_msg.buttons
         self.previous_twist = self.twist
 
 

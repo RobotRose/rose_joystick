@@ -63,24 +63,22 @@ class ArmControlInterpreterWithSubmodes(ArmControlInterpreter):
             rospy.logwarn("Could not find settings for angular submode of arms")
 
     def process(self, joystick_msg):
-        if not self.previous_button_state:
-            self.previous_button_state = joystick_msg.buttons
+        down, released, downed = self.button_state.derive_button_events(joystick_msg.buttons)
         
         goal = manipulateGoal()
         goal.arm             = self.arm_index
 
-        if (joystick_msg.buttons[self.open_close_toggle] != self.previous_button_state[self.open_close_toggle] and not joystick_msg.buttons[self.open_close_toggle]):
+        if self.open_close_toggle in released:
             pass
         else:
             goal.required_action = SET_VELOCITY
 
-            pushed_buttons = [index for index, pressed in enumerate(joystick_msg.buttons) if pressed]
-            active_mode = self.submodes.get(tuple(sorted(pushed_buttons)), None)
+            active_mode = self.submodes.get(tuple(sorted(down)), None) #Get the mode that is activated by the button that are pressed down now
             if active_mode:
                 rospy.loginfo("Submode: {0}_{1}".format(self, active_mode))
                 self.twist = active_mode.sub_process(joystick_msg)
             else:
-                rospy.loginfo("No submode activated by {1}. {0}".format([mode.usage() for mode in self.submodes.values()], pushed_buttons))
+                rospy.loginfo("No submode activated by {1}. {0}".format([mode.usage() for mode in self.submodes.values()], down))
                 self.twist = Twist()
 
             goal.required_velocity = self.twist
@@ -88,8 +86,6 @@ class ArmControlInterpreterWithSubmodes(ArmControlInterpreter):
         goal.required_gripper_width = self.gripper_width
 
         self.arm_client.send_goal(goal) #And wait... brings the rate down!
-
-        self.previous_button_state = joystick_msg.buttons
 
     def __str__(self):
         return "{0} arm".format(self.side).capitalize()

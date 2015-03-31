@@ -36,8 +36,6 @@ class ArmsControlInterpreter(JoystickInterpreter):
         self.publisher_thread = None
         self.twist = Twist()
 
-        self.previous_button_state = []
-
     def start(self):
         self.timer = rospy.Timer(rospy.Duration(0.1), self.repeat_message, oneshot=False)
 
@@ -58,28 +56,21 @@ class ArmsControlInterpreter(JoystickInterpreter):
         self.right_arm_velocity_publisher.publish(self.twist)
 
     def process(self, joystick_msg):
-        if not self.previous_button_state:
-            self.previous_button_state = joystick_msg.buttons
+        down, released, downed = self.button_state.derive_button_events(joystick_msg.buttons)
 
-        if self.settings.has_key("switch_left_arm") and \
-           joystick_msg.buttons[self.settings["switch_left_arm"]] != self.previous_button_state[self.settings["switch_left_arm"]] and \
-           not joystick_msg.buttons[self.settings["switch_left_arm"]]:
+        if self.settings.has_key("switch_left_arm") and self.settings["switch_left_arm"] in released:
             #the buttons is pressed and released
             self.selected_arm_publisher = self.left_arm_velocity_publisher
             self.selected_arm = 1
             rospy.loginfo("Controlling LEFT arm")
         
-        if self.settings.has_key("switch_right_arm") and \
-           joystick_msg.buttons[self.settings["switch_right_arm"]] != self.previous_button_state[self.settings["switch_right_arm"]] and \
-           not joystick_msg.buttons[self.settings["switch_right_arm"]]:
+        if self.settings.has_key("switch_right_arm") and self.settings["switch_right_arm"] in released:
             #the buttons is pressed and released
             self.selected_arm_publisher = self.right_arm_velocity_publisher
             self.selected_arm = 0
             rospy.loginfo("Controlling RIGHT arm")        
 
-        if self.settings.has_key("switch_other_arm") and \
-           joystick_msg.buttons[self.settings["switch_other_arm"]] != self.previous_button_state[self.settings["switch_other_arm"]] and \
-           not joystick_msg.buttons[self.settings["switch_other_arm"]]:
+        if self.settings.has_key("switch_other_arm") and self.settings["switch_other_arm"] in released:
             #the buttons is pressed and released
             text = "right" if self.selected_arm_publisher == self.left_arm_velocity_publisher else "left"
             self.selected_arm_publisher = self.right_arm_velocity_publisher if self.selected_arm_publisher == self.left_arm_velocity_publisher else self.left_arm_velocity_publisher
@@ -101,8 +92,6 @@ class ArmsControlInterpreter(JoystickInterpreter):
         goal.required_velocity = self.twist
 
         self.arm_client.send_goal(goal)
-
-        self.previous_button_state = joystick_msg.buttons
 
 
     def __str__(self):

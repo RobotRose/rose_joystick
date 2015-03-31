@@ -34,6 +34,7 @@ class BaseControlInterpreter(JoystickInterpreter):
         self.previously_active = self.active
 
     def process(self, joystick_msg):
+        down, released, downed = self.button_state.derive_button_events(joystick_msg.buttons)
         self.twist = Twist()
 
         if self.settings.has_key("throttle"):
@@ -45,7 +46,7 @@ class BaseControlInterpreter(JoystickInterpreter):
 
         #If the config requires a button to enable strafing
         if self.settings.has_key("press_to_strafe"):
-            if not joystick_msg.buttons[self.settings["press_to_strafe"]]: 
+            if not self.settings["press_to_strafe"] in down: 
                 inversion_multiplier = 1 #no inversion by default
                 if joystick_msg.axes[self.settings["linear_x"]["axis"]] < -0.1: 
                     inversion_multiplier = -1 #Somehow, this makes more sense...
@@ -142,15 +143,16 @@ class BaseControlInterpreterWithSubmodes(JoystickInterpreter):
         self.previously_active = self.active
 
     def process(self, joystick_msg):
-        pushed_buttons = [index for index, pressed in enumerate(joystick_msg.buttons) if pressed]
-        active_mode = self.submodes.get(tuple(sorted(pushed_buttons)), None)
+        down, released, downed = self.button_state.derive_button_events(joystick_msg.buttons)
+
+        active_mode = self.submodes.get(tuple(sorted(down)), None) 
         if active_mode:
             self.active = True
             rospy.loginfo("Submode: {0}_{1}".format(self, active_mode))
             self.twist = active_mode.sub_process(joystick_msg)
         else:
             self.active = False
-            rospy.loginfo("No submode activated by {1}. {0}".format([mode.usage() for mode in self.submodes.values()], pushed_buttons))
+            rospy.loginfo("No submode activated by {1}. {0}".format([mode.usage() for mode in self.submodes.values()], down))
             self.twist = Twist()
 
     def stop(self):
