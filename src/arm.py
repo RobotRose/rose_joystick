@@ -25,7 +25,7 @@ class ArmControlInterpreter(LatchingJoystickInterpreter):
         Instantiate a new ArmControlInterpreter
         @param side side of the arm, i.e. left or right. Some parameters are determined based on this.
         """
-        super(ArmControlInterpreter, self).__init__()
+        super(ArmControlInterpreter, self).__init__(rate=2.0)
 
         self.settings = settings
 
@@ -46,14 +46,14 @@ class ArmControlInterpreter(LatchingJoystickInterpreter):
         self.open_close_toggle = self.settings["open_close"]
 
     def when_active(self):
-        self.arm_client.send_goal(self.goal)
+        self.arm_client.send_goal_and_wait(self.goal)
 
     def become_inactive(self):
         self.goal = manipulateGoal()
         self.goal.arm = self.arm_index
         self.goal.required_velocity = Twist()
         self.goal.required_gripper_width = self.gripper_width
-        self.arm_client.send_goal(self.goal)
+        self.arm_client.send_goal_and_wait(self.goal)
 
     def process(self, joystick_msg, down, released, downed):        
         self.goal       = manipulateGoal()

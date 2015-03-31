@@ -133,13 +133,14 @@ def twist_is_small(twist, threshold=0.001):
     return all_small
 
 class LatchingJoystickInterpreter(JoystickInterpreter):
-    def __init__(self):
+    def __init__(self, rate=0.2):
         super(LatchingJoystickInterpreter, self).__init__()
+        self.rate = rate
         self.active = False
         self.previously_active = False
 
     def start(self):
-        self.timer = rospy.Timer(rospy.Duration(0.2), self.repeat_messsage, oneshot=False)
+        self.timer = rospy.Timer(rospy.Duration(self.rate), self.repeat_messsage, oneshot=False)
 
     def stop(self):
         rospy.loginfo("Stopping {0}".format(self))
