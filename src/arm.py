@@ -55,9 +55,7 @@ class ArmControlInterpreter(JoystickInterpreter):
         self.gripper_width = ArmControlInterpreter.gripper_open
         self.open_close_toggle = self.settings["open_close"]
 
-    def process(self, joystick_msg):
-        down, released, downed = self.button_state.derive_button_events(joystick_msg.buttons)
-        
+    def process(self, joystick_msg, down, released, downed):        
         goal = manipulateGoal()
         goal.arm             = self.arm_index
 

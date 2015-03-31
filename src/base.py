@@ -33,8 +33,7 @@ class BaseControlInterpreter(JoystickInterpreter):
 
         self.previously_active = self.active
 
-    def process(self, joystick_msg):
-        down, released, downed = self.button_state.derive_button_events(joystick_msg.buttons)
+    def process(self, joystick_msg, down, released, downed):
         self.twist = Twist()
 
         if self.settings.has_key("throttle"):
@@ -142,8 +141,7 @@ class BaseControlInterpreterWithSubmodes(JoystickInterpreter):
 
         self.previously_active = self.active
 
-    def process(self, joystick_msg):
-        down, released, downed = self.button_state.derive_button_events(joystick_msg.buttons)
+    def process(self, joystick_msg, down, released, downed):
 
         active_mode = self.submodes.get(tuple(sorted(down)), None) 
         if active_mode:

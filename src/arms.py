@@ -55,9 +55,7 @@ class ArmsControlInterpreter(JoystickInterpreter):
         self.left_arm_velocity_publisher.publish(self.twist)
         self.right_arm_velocity_publisher.publish(self.twist)
 
-    def process(self, joystick_msg):
-        down, released, downed = self.button_state.derive_button_events(joystick_msg.buttons)
-
+    def process(self, joystick_msg, down, released, downed):
         if self.settings.has_key("switch_left_arm") and self.settings["switch_left_arm"] in released:
             #the buttons is pressed and released
             self.selected_arm_publisher = self.left_arm_velocity_publisher

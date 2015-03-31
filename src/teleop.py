@@ -177,11 +177,12 @@ class JoystickTeleop(object):
 
         if self.interpreter:
             self.mode_publisher.publish(str(self.interpreter))
-            self.interpreter.process(joystick_msg)
+            try:
+                self.interpreter.process(joystick_msg, down, released, downed)
+            except TypeError, te:
+                rospy.logerr("Interpreter {0} cannot process {1}: {2}".format(self.interpreter, (joystick_msg, down, released, downed), te))
         else:
             self.mode_publisher.publish(str(self.interpreter)) #Real-life starts counting at 1
-
-        self.previous_button_state = joystick_msg.buttons
 
 if __name__ == "__main__":
     rospy.init_node("joystick_teleop")

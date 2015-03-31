@@ -13,8 +13,12 @@ class JoystickInterpreter(object):
         """Start the interpreting after is was stopped"""
         pass
 
-    def process(self, joystick_msg):
-        """Take a sensor_msgs/Joy message and interpret it for this mode (e.g. base, arms, neck...)"""
+    def process(self, joystick_msg, down, released, downed):
+        """Take a sensor_msgs/Joy message and interpret it for this mode (e.g. base, arms, neck...)
+        @param joystick_msgs the raw joystick message with all the joystick's axes and buttons
+        @param down the indices of the buttons on the joystick that are down/pressed
+        @param released the indices of the buttons that are released (have a flank/edge from down to up)
+        @param downed buttons that are just pressed (have a flank from up to down)"""
         pass
 
     def stop(self):
@@ -62,9 +66,9 @@ class CombinedInterpreter(JoystickInterpreter):
         for interpreter in self.subinterpreters:
             interpreter.stop()
 
-    def process(self, joystick_msg):
+    def process(self, joystick_msg, down, released, downed):
         for interpreter in self.subinterpreters:
-            interpreter.process(joystick_msg)
+            interpreter.process(joystick_msg, down, released, downed)
 
     def __str__(self):
         return "+".join([str(i) for i in self.subinterpreters])

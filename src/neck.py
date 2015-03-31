@@ -29,7 +29,7 @@ class NeckControlInterpreter(JoystickInterpreter):
     def update_tilt(self, msg):
         self.tilt = msg.current_pos
 
-    def process(self, joystick_msg):
+    def process(self, joystick_msg, down, released, downed):
         rospy.logdebug("Neck processing joystick_msg")
 
         new_pan = self.pan + joystick_msg.axes[self.settings["pan"]["axis"]] * self.settings["pan"]["scale"]
@@ -61,8 +61,7 @@ class NeckPredefinedController(JoystickInterpreter):
     def update_tilt(self, msg):
         self.tilt = msg.current_pos
 
-    def process(self, joystick_msg):
-        down, released, downed = self.button_state.derive_button_events(joystick_msg.buttons)
+    def process(self, joystick_msg, down, released, downed):
         def apply_pose(pose_dict):
             new_pan, new_tilt = pose_dict["pan"], pose_dict["tilt"]
             rospy.loginfo("Neck going to pose (pan: {0}, tilt: {1})".format(new_pan, new_tilt))
@@ -113,7 +112,7 @@ class SimpleNeckController(JoystickInterpreter):
     def update_tilt(self, msg):
         self.tilt = msg.current_pos
 
-    def process(self, joystick_msg):
+    def process(self, joystick_msg, down, released, downed):
         if self.settings.has_key("pan_simple"):
             cmd_tilt = joystick_msg.axes[self.settings["tilt_simple"]["axis"]]
             scale = self.settings["tilt_simple"]["scale"]

@@ -62,9 +62,7 @@ class ArmControlInterpreterWithSubmodes(ArmControlInterpreter):
         except KeyError, ke:
             rospy.logwarn("Could not find settings for angular submode of arms")
 
-    def process(self, joystick_msg):
-        down, released, downed = self.button_state.derive_button_events(joystick_msg.buttons)
-        
+    def process(self, joystick_msg, down, released, downed):        
         goal = manipulateGoal()
         goal.arm             = self.arm_index
 
