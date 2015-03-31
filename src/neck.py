@@ -130,4 +130,4 @@ class SimpleNeckController(JoystickInterpreter):
                 self.pan_publisher.publish(new_pan)
         
     def __str__(self):
-        return "Neck (only tilt)"
+        return "Neck"
