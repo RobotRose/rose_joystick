@@ -67,13 +67,8 @@ class ArmControlInterpreterWithSubmodes(ArmControlInterpreter):
         self.goal.arm             = self.arm_index
 
         if self.open_close_toggle in released:
+            self.define_width()
             self.goal.required_action = MOVE_GRIPPER
-            if self.gripper_width == ArmControlInterpreter.gripper_closed: #Open it!
-                rospy.loginfo("Opening gripper")
-                self.gripper_width      = ArmControlInterpreter.gripper_open
-            else: #Close it!
-                rospy.loginfo("Closing gripper")
-                self.gripper_width      = ArmControlInterpreter.gripper_closed
         else:
             self.goal.required_action = SET_VELOCITY
 
