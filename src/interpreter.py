@@ -111,6 +111,28 @@ class ButtonState(object):
         return down, released, pressed
 
 
+class LatchingJoystickInterpreter(JoystickInterpreter):
+    def __init__(self):
+        super(LatchingJoystickInterpreter, self).__init__()
+        self.active = False
+        self.previously_active = False
+
+    def repeat_messsage(self, *args, **kwargs):
+        if self.active:
+            self.when_active()
+        
+        if self.previously_active and not self.active:
+            self.become_inactive()
+
+        self.previously_active = self.active
+
+    def when_active(self):
+        raise NotImplementedError("Subclasses must implement this function")
+
+    def become_inactive(self):
+        raise NotImplementedError("Subclasses must implement this function")
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod() #Run the doctests, i.e. the """ >>> """ stuff that looks like a Python interpreter
