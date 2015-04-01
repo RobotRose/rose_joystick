@@ -54,7 +54,7 @@ class ArmControlInterpreter(LatchingJoystickInterpreter):
         self.goal.arm = self.arm_index
         self.goal.required_velocity = Twist()
         self.goal.required_gripper_width = self.gripper_width
-        self.arm_client.send_goal_and_wait(self.goal)
+        self.arm_client.send_goal(self.goal)
 
     def define_width(self):
         if self.gripper_width == ArmControlInterpreter.gripper_closed: #Open it!

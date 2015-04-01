@@ -18,7 +18,7 @@ import yaml
 import interpreter
 import base
 import neck
-import arm, arm_submodes, arms
+import arm, arm_submodes
 import lift
 
 class CallIfChanged(object):
