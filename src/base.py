@@ -3,10 +3,10 @@ import rospy
 
 from geometry_msgs.msg import Twist
 
-from interpreter import JoystickInterpreter, Submode
+from interpreter import LatchingJoystickInterpreter, Submode, twist_is_small
 import threading
 
-class BaseControlInterpreter(JoystickInterpreter):
+class BaseControlInterpreter(LatchingJoystickInterpreter):
     """Convert joystick values to a Twist"""
 
     def __init__(self, settings, driving_scale=0.1, steering_scale=0.2): #max value for a Joy-axis value is 1.0. Max speed is 0.1m/s
@@ -17,23 +17,16 @@ class BaseControlInterpreter(JoystickInterpreter):
 
         self.stopper = None
         self.publisher_thread = None
-        self.active = False
-        self.previously_active = False
         self.twist = Twist()
 
-    def start(self):
-        self.timer = rospy.Timer(rospy.Duration(0.2), self.repeat_messsage, oneshot=False)
-
-    def repeat_messsage(self, *args, **kwargs):
-        if self.active:
-            self.cmd_vel.publish(self.twist)
+    def when_active(self):
+        self.cmd_vel.publish(self.twist)
         
-        if self.previously_active and not self.active:
-            self.cmd_vel.publish(Twist())
+    def become_inactive(self):
+        self.twist = Twist() #Empty twist, everything is zero
+        self.cmd_vel.publish(Twist())
 
-        self.previously_active = self.active
-
-    def process(self, joystick_msg):
+    def process(self, joystick_msg, down, released, downed):
         self.twist = Twist()
 
         if self.settings.has_key("throttle"):
@@ -45,7 +38,7 @@ class BaseControlInterpreter(JoystickInterpreter):
 
         #If the config requires a button to enable strafing
         if self.settings.has_key("press_to_strafe"):
-            if not joystick_msg.buttons[self.settings["press_to_strafe"]]: 
+            if not self.settings["press_to_strafe"] in down: 
                 inversion_multiplier = 1 #no inversion by default
                 if joystick_msg.axes[self.settings["linear_x"]["axis"]] < -0.1: 
                     inversion_multiplier = -1 #Somehow, this makes more sense...
@@ -56,19 +49,7 @@ class BaseControlInterpreter(JoystickInterpreter):
             self.twist.angular.z = joystick_msg.axes[self.settings["angular_z"]["axis"]] * self.settings["angular_z"]["scale"]
             self.twist.linear.y = joystick_msg.axes[self.settings["linear_y"]["axis"]] * self.settings["linear_y"]["scale"] * throttle_scale
 
-        self.active = ( abs(self.twist.linear.x) > 0.001 or 
-                        abs(self.twist.linear.y) > 0.001 or 
-                        abs(self.twist.linear.z) > 0.001 or 
-                        abs(self.twist.angular.x) > 0.001 or 
-                        abs(self.twist.angular.y) > 0.001 or 
-                        abs(self.twist.angular.z) > 0.001)
-
-    def stop(self):
-        rospy.loginfo("Stopping {0}".format(self))
-        self.twist = Twist() #Empty twist, everything is zero
-        self.timer.shutdown()
-        
-        self.cmd_vel.publish(self.twist)
+        self.active = not twist_is_small(self.twist)
 
     def __str__(self):
         return "Base"
@@ -111,7 +92,7 @@ class BaseStrafingMode(Submode):
     def __str__(self):
         return "Strafing"
 
-class BaseControlInterpreterWithSubmodes(JoystickInterpreter):
+class BaseControlInterpreterWithSubmodes(LatchingJoystickInterpreter):
 
     def __init__(self, settings):
         super(BaseControlInterpreterWithSubmodes, self).__init__()
@@ -120,8 +101,6 @@ class BaseControlInterpreterWithSubmodes(JoystickInterpreter):
         self.settings = settings
 
         self.twist = Twist()
-        self.active = False
-        self.previously_active = False
 
         steering = BaseSteeringMode(settings['submodes']['steering'], self)
         strafing = BaseStrafingMode(settings['submodes']['strafing'], self)
@@ -130,35 +109,25 @@ class BaseControlInterpreterWithSubmodes(JoystickInterpreter):
 
     def start(self):
         rospy.loginfo("Starting {0}".format(self))
-        self.timer = rospy.Timer(rospy.Duration(0.2), self.repeat_messsage, oneshot=False)
+        super(BaseControlInterpreterWithSubmodes, self).start()
 
-    def repeat_messsage(self, *args, **kwargs):
-        if self.active:
-            self.cmd_vel.publish(self.twist)
+    def when_active(self):
+        self.cmd_vel.publish(self.twist)
         
-        if self.previously_active and not self.active:
-            self.cmd_vel.publish(Twist())
+    def become_inactive(self):
+        self.twist = Twist() #Empty twist, everything is zero
+        self.cmd_vel.publish(Twist())
 
-        self.previously_active = self.active
-
-    def process(self, joystick_msg):
-        pushed_buttons = [index for index, pressed in enumerate(joystick_msg.buttons) if pressed]
-        active_mode = self.submodes.get(tuple(sorted(pushed_buttons)), None)
+    def process(self, joystick_msg, down, released, downed):
+        active_mode = self.submodes.get(tuple(sorted(down)), None) 
         if active_mode:
             self.active = True
             rospy.loginfo("Submode: {0}_{1}".format(self, active_mode))
             self.twist = active_mode.sub_process(joystick_msg)
         else:
             self.active = False
-            rospy.loginfo("No submode activated by {1}. {0}".format([mode.usage() for mode in self.submodes.values()], pushed_buttons))
+            rospy.loginfo("No submode activated by {1}. {0}".format([mode.usage() for mode in self.submodes.values()], down))
             self.twist = Twist()
-
-    def stop(self):
-        rospy.loginfo("Stopping {0}".format(self))
-        self.twist = Twist() #Empty twist, everything is zero
-        self.timer.shutdown()
-        
-        self.cmd_vel.publish(self.twist)
 
     def __str__(self):
         return "Base"

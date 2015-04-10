@@ -10,7 +10,7 @@ class LiftControlInterpreter(JoystickInterpreter):
        self.settings = settings
        self.lift_pose_requester = rospy.Publisher('lift_controller/lift/command', lift_command)
 
-   def process(self, joystick_msg):
+   def process(self, joystick_msg, down, released, downed):
        #import ipdb; ipdb.set_trace()
        joyvalue = joystick_msg.axes[self.settings["pose"]["axis"]]
        request = lift_command()

@@ -18,7 +18,7 @@ import yaml
 import interpreter
 import base
 import neck
-import arm
+import arm, arm_submodes
 import lift
 
 class CallIfChanged(object):
@@ -67,8 +67,8 @@ class JoystickTeleop(object):
 
         if settings.has_key('arms'):
             if settings['arms'].has_key('submodes'):
-                left = arm.ArmControlInterpreterWithSubmodes(settings['arms'], side="left")
-                # right += [arm.ArmControlInterpreterWithSubmodes(settings['arms'], side="right")]
+                left = arm_submodes.ArmControlInterpreterWithSubmodes(settings['arms'], side="left")
+                # right += [arm_submodes.ArmControlInterpreterWithSubmodes(settings['arms'], side="right")]
                 if settings['neck'].has_key("tilt_simple"):
                     neck_simple = neck.SimpleNeckController(settings['neck'])
                     neck_predef = neck.NeckPredefinedController(settings['neck'])
@@ -88,7 +88,7 @@ class JoystickTeleop(object):
         self.next_btn = settings.get('next_mode', None)
         self.previous_btn = settings.get('previous_mode', -1)
         
-        self.previous_button_state = []
+        self.button_state = interpreter.ButtonState()
 
         joystick_topic = settings["topic"]
         self.joystick_subscriber = rospy.Subscriber(joystick_topic, Joy, self.process_joystick)
@@ -164,16 +164,12 @@ class JoystickTeleop(object):
 
         joystick_msg.axes = [apply_deadzone(value) for value in joystick_msg.axes]
 
-        #initialize with first value we get
-        if not self.previous_button_state:
-            self.previous_button_state = joystick_msg.buttons
-            if self.next_btn:
-                rospy.logerr("No joystick interpreter selected, press button {0} to switch to the next mode".format(self.next_btn+1)) #Real-life starts counting at 1
+        down, released, downed = self.button_state.derive_button_events(joystick_msg.buttons)
 
         switch_interpreter = 0
-        if self.next_btn != None and (joystick_msg.buttons[self.next_btn] != self.previous_button_state[self.next_btn] and not joystick_msg.buttons[self.next_btn]):
+        if self.next_btn != None and self.next_btn in released: 
             switch_interpreter = 1
-        if self.previous_btn != -1 and (joystick_msg.buttons[self.previous_btn] != self.previous_button_state[self.previous_btn] and not joystick_msg.buttons[self.previous_btn]):
+        if self.previous_btn != -1 and self.previous_btn in released:
             switch_interpreter = -1
 
         if switch_interpreter:
@@ -181,11 +177,12 @@ class JoystickTeleop(object):
 
         if self.interpreter:
             self.mode_publisher.publish(str(self.interpreter))
-            self.interpreter.process(joystick_msg)
+            try:
+                self.interpreter.process(joystick_msg, down, released, downed)
+            except TypeError, te:
+                rospy.logerr("Interpreter {0} cannot process {1}: {2}".format(self.interpreter, (joystick_msg, down, released, downed), te))
         else:
             self.mode_publisher.publish(str(self.interpreter)) #Real-life starts counting at 1
-
-        self.previous_button_state = joystick_msg.buttons
 
 if __name__ == "__main__":
     rospy.init_node("joystick_teleop")

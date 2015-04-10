@@ -29,7 +29,7 @@ class NeckControlInterpreter(JoystickInterpreter):
     def update_tilt(self, msg):
         self.tilt = msg.current_pos
 
-    def process(self, joystick_msg):
+    def process(self, joystick_msg, down, released, downed):
         rospy.logdebug("Neck processing joystick_msg")
 
         new_pan = self.pan + joystick_msg.axes[self.settings["pan"]["axis"]] * self.settings["pan"]["scale"]
@@ -55,15 +55,13 @@ class NeckPredefinedController(JoystickInterpreter):
 
         self.previous_pose = (0,0)
 
-        self.previous_button_state = []
-
     def update_pan(self, msg):
         self.pan = msg.current_pos
 
     def update_tilt(self, msg):
         self.tilt = msg.current_pos
 
-    def process(self, joystick_msg):
+    def process(self, joystick_msg, down, released, downed):
         def apply_pose(pose_dict):
             new_pan, new_tilt = pose_dict["pan"], pose_dict["tilt"]
             rospy.loginfo("Neck going to pose (pan: {0}, tilt: {1})".format(new_pan, new_tilt))
@@ -71,11 +69,7 @@ class NeckPredefinedController(JoystickInterpreter):
             self.pan_publisher.publish(new_pan)
             self.tilt_publisher.publish(new_tilt)
 
-        if not self.previous_button_state:
-            self.previous_button_state = joystick_msg.buttons
-
-        if joystick_msg.buttons[self.predefined_pose_stepper] != self.previous_button_state[self.predefined_pose_stepper] and not joystick_msg.buttons[self.predefined_pose_stepper]:
-            
+        if self.predefined_pose_stepper in released:            
             self.selected_pose += 1
             poses = self.settings["predefined_poses"]
             pose_keys = poses.keys()
@@ -83,11 +77,8 @@ class NeckPredefinedController(JoystickInterpreter):
             pose = poses[selected_pose_name]
             apply_pose(pose)
 
-        changed_buttons = [curr != prev for (curr, prev) in zip(joystick_msg.buttons, self.previous_button_state)]
-
-        pushed_buttons  = [index for index, changed in enumerate(changed_buttons) if changed and joystick_msg.buttons[index]]
-        if any(pushed_buttons):
-            first_pushed_button = pushed_buttons[0]
+        if any(down):
+            first_pushed_button = down[0]
 
             poses = self.settings["predefined_poses"]
             try:
@@ -95,8 +86,6 @@ class NeckPredefinedController(JoystickInterpreter):
                 apply_pose(pushed_pose)
             except IndexError, e:
                 pass
-
-        self.previous_button_state = joystick_msg.buttons
 
     def __str__(self):
         return "Neck with predefined poses"
@@ -123,7 +112,7 @@ class SimpleNeckController(JoystickInterpreter):
     def update_tilt(self, msg):
         self.tilt = msg.current_pos
 
-    def process(self, joystick_msg):
+    def process(self, joystick_msg, down, released, downed):
         if self.settings.has_key("pan_simple"):
             cmd_tilt = joystick_msg.axes[self.settings["tilt_simple"]["axis"]]
             scale = self.settings["tilt_simple"]["scale"]
@@ -141,4 +130,4 @@ class SimpleNeckController(JoystickInterpreter):
                 self.pan_publisher.publish(new_pan)
         
     def __str__(self):
-        return "Neck (only tilt)"
+        return "Neck"
