@@ -5,6 +5,7 @@ import rospy
 
 from rose_joystick.srv import switch_joystick_mode, switch_joystick_modeResponse
 from rose_joystick.msg import available_modes
+from rose_arm_controller_msgs.srv import get_arms
 
 from sensor_msgs.msg import Joy
 from std_msgs.msg import String
@@ -66,21 +67,28 @@ class JoystickTeleop(object):
             self.interpreters += [base_mode]
 
         if settings.has_key('arms'):
-            if settings['arms'].has_key('submodes'):
-                left = arm_submodes.ArmControlInterpreterWithSubmodes(settings['arms'], side="left")
-                # right += [arm_submodes.ArmControlInterpreterWithSubmodes(settings['arms'], side="right")]
-                if settings['neck'].has_key("tilt_simple"):
-                    neck_simple = neck.SimpleNeckController(settings['neck'])
-                    neck_predef = neck.NeckPredefinedController(settings['neck'])
-                    self.interpreters += [interpreter.CombinedInterpreter(left, neck_simple, neck_predef)]
-                    # self.interpreters += [interpreter.CombinedInterpreter(right, neck_simple)]
-            else:
-                self.interpreters += [arm.ArmControlInterpreter(settings['arms'], side="left")]
-                # self.interpreters += [arm.ArmControlInterpreter(settings['arms'], side="right")]
+            available_arms = []
+            rospy.wait_for_service('/arm_controller/get_arms')
+            get_available_arms = rospy.ServiceProxy('/arm_controller/get_arms', get_arms)
+            try:
+                response = get_available_arms()
+                available_arms = response.arms
+            except rospy.ServiceException, e:
+                print "Service call failed: %s"%e
+
+            for arm in available_arms:
+                if settings['arms'].has_key('submodes'):
+                    left = arm_submodes.ArmControlInterpreterWithSubmodes(settings['arms'], name=arm)
+                    if settings['neck'].has_key("tilt_simple"):
+                        neck_simple = neck.SimpleNeckController(settings['neck'])
+                        neck_predef = neck.NeckPredefinedController(settings['neck'])
+                        self.interpreters += [interpreter.CombinedInterpreter(left, neck_simple, neck_predef)]
+                        # self.interpreters += [interpreter.CombinedInterpreter(right, neck_simple)]
+                else:
+                    self.interpreters += [arm.ArmControlInterpreter(settings['arms'], name=arm)]
 
         if settings.has_key('lift'):
             self.interpreters += [lift.LiftControlInterpreter(settings['lift'])]
-
 
         self.interpreter_names = [str(inter) for inter in self.interpreters]
         self._interpreter = None

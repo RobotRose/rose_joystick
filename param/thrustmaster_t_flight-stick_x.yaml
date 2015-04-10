@@ -32,15 +32,15 @@ neck:
 arms:
   submodes:
     linear:
-      linear_x: {axis: 0, scale: -0.1}
-      linear_y: {axis: 2, scale: -0.1}
-      linear_z: {axis: 1, scale: 0.1}
+      linear_x: {axis: 0, scale: 0.6}
+      linear_y: {axis: 1, scale: -0.6}
+      linear_z: {axis: 2, scale: 0.6}
       enable: 
         - 0 #Deadman's switch = fire buttons
     angular:
-      angular_x: {axis: 1, scale: -0.4}
-      angular_y: {axis: 2, scale: -0.4}
-      angular_z: {axis: 0, scale: -0.4}
+      angular_x: {axis: 1, scale: 1.2}
+      angular_y: {axis: 2, scale: 1.2}
+      angular_z: {axis: 0, scale: -1.2}
       enable: 
         - 1 #striped button 
         - 0 #Deadman's switch = fire buttons
