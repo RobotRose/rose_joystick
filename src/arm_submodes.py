@@ -2,14 +2,13 @@ import roslib; roslib.load_manifest("rose_joystick")
 import rospy
 
 import actionlib
-import arm_controller.msg
+import rose_arm_controller_msgs.msg
 
-from sensor_msgs.msg import Joy
-from geometry_msgs.msg import Twist
-from arm_controller.msg import manipulateAction, manipulateGoal
+from geometry_msgs.msg import Twist, TwistStamped
+from rose_arm_controller_msgs.msg import set_gripper_widthAction, set_gripper_widthGoal, set_velocityAction, set_velocityGoal
 
 from interpreter import Submode
-from arm import ArmControlInterpreter, MOVE_GRIPPER, SET_VELOCITY
+from arm import ArmControlInterpreter
 import threading
 
 class ArmLinearMode(Submode):
@@ -42,12 +41,12 @@ class ArmAngularMode(Submode):
 
 class ArmControlInterpreterWithSubmodes(ArmControlInterpreter):
 
-    def __init__(self, settings, side, linear_scaling_factor=0.1, angular_scaling_factor=0.1):
+    def __init__(self, settings, name, linear_scaling_factor=0.1, angular_scaling_factor=0.1):
         """
         Instantiate a new ArmControlInterpreterWithSubmodes
-        @param side side of the arm, i.e. left or right. Some parameters are determined based on this.
+        @param name name of the arm.
         """
-        super(ArmControlInterpreterWithSubmodes, self).__init__(settings, side, linear_scaling_factor, angular_scaling_factor)
+        super(ArmControlInterpreterWithSubmodes, self).__init__(settings, name, linear_scaling_factor, angular_scaling_factor)
 
         self.submodes = dict()
         try:
@@ -63,32 +62,34 @@ class ArmControlInterpreterWithSubmodes(ArmControlInterpreter):
             rospy.logwarn("Could not find settings for angular submode of arms")
 
     def process(self, joystick_msg, down, released, downed):        
-        self.goal = manipulateGoal()
-        self.goal.arm             = self.arm_index
+        self.velocity_goal      = set_velocityGoal()
+        self.velocity_goal.arm  = self.arm_name
+        self.velocity_goal.required_velocity = TwistStamped()
+        self.velocity_goal.required_velocity.header.stamp     = rospy.Time.now()
+        self.velocity_goal.required_velocity.header.frame_id  = "base_link"
 
         if self.open_close_toggle in released:
             self.define_width()
-            self.goal.required_action = MOVE_GRIPPER
-        else:
-            self.goal.required_action = SET_VELOCITY
+            self.gripper_goal.arm            = self.arm_name
+            self.gripper_goal.required_width = self.gripper_width
 
+            rospy.loginfo("Waiting for gripper to be closed/opened...")
+            success = self.arm_gripper_client.send_goal_and_wait(self.gripper_goal, rospy.Duration.from_sec(3.5))
+            rospy.loginfo("Gripper is closed/opened")
+        else:
             active_mode = self.submodes.get(tuple(sorted(down)), None) #Get the mode that is activated by the button that are pressed down now
+            twist = Twist()
             if active_mode:
                 rospy.loginfo("Submode: {0}_{1}".format(self, active_mode))
-                self.twist = active_mode.sub_process(joystick_msg)
+                twist = active_mode.sub_process(joystick_msg)
                 self.active = True
             else:
                 rospy.loginfo("No submode activated by {1}. {0}".format([mode.usage() for mode in self.submodes.values()], down))
-                self.twist = Twist()
+                twist = Twist()
                 self.active = False
 
-            self.goal.required_velocity = self.twist
+            self.velocity_goal.required_velocity.twist = twist
 
-        self.goal.required_gripper_width = self.gripper_width
-        if self.goal.required_action == MOVE_GRIPPER:
-            rospy.loginfo("Waiting for gripper to be closed/opened...")
-            success = self.arm_client.send_goal_and_wait(self.goal, rospy.Duration.from_sec(2.0))
-            rospy.loginfo("Gripper is closed/opened")
 
     def __str__(self):
-        return "{0} arm".format(self.side).capitalize()
+        return "{0} arm".format(self.arm_name).capitalize()
