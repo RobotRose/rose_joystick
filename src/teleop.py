@@ -68,24 +68,27 @@ class JoystickTeleop(object):
 
         if settings.has_key('arms'):
             available_arms = []
-            rospy.wait_for_service('/arm_controller/get_arms')
-            get_available_arms = rospy.ServiceProxy('/arm_controller/get_arms', get_arms)
             try:
-                response = get_available_arms()
-                available_arms = response.arms
-            except rospy.ServiceException, e:
-                print "Service call failed: %s"%e
+                rospy.wait_for_service('/arm_controller/get_arms', 10) # Wait at least 10 seconds
+                get_available_arms = rospy.ServiceProxy('/arm_controller/get_arms', get_arms)
+                try:
+                    response = get_available_arms()
+                    available_arms = response.arms
+                except rospy.ServiceException, e:
+                    print "Service call failed: %s"%e
 
-            for arm in available_arms:
-                if settings['arms'].has_key('submodes'):
-                    left = arm_submodes.ArmControlInterpreterWithSubmodes(settings['arms'], name=arm)
-                    if settings['neck'].has_key("tilt_simple"):
-                        neck_simple = neck.SimpleNeckController(settings['neck'])
-                        neck_predef = neck.NeckPredefinedController(settings['neck'])
-                        self.interpreters += [interpreter.CombinedInterpreter(left, neck_simple, neck_predef)]
-                        # self.interpreters += [interpreter.CombinedInterpreter(right, neck_simple)]
-                else:
-                    self.interpreters += [arm.ArmControlInterpreter(settings['arms'], name=arm)]
+                for arm in available_arms:
+                    if settings['arms'].has_key('submodes'):
+                        left = arm_submodes.ArmControlInterpreterWithSubmodes(settings['arms'], name=arm)
+                        if settings['neck'].has_key("tilt_simple"):
+                            neck_simple = neck.SimpleNeckController(settings['neck'])
+                            neck_predef = neck.NeckPredefinedController(settings['neck'])
+                            self.interpreters += [interpreter.CombinedInterpreter(left, neck_simple, neck_predef)]
+                            # self.interpreters += [interpreter.CombinedInterpreter(right, neck_simple)]
+                    else:
+                        self.interpreters += [arm.ArmControlInterpreter(settings['arms'], name=arm)]
+            except rospy.ROSException, e:
+                print("Could not connect to get available arms via service request: " + str(e))
 
         if settings.has_key('lift'):
             self.interpreters += [lift.LiftControlInterpreter(settings['lift'])]
