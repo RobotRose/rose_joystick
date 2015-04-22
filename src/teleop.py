@@ -69,7 +69,7 @@ class JoystickTeleop(object):
         if settings.has_key('arms'):
             available_arms = []
             try:
-                rospy.wait_for_service('/arm_controller/get_arms', 10) # Wait at least 10 seconds
+                rospy.wait_for_service('/arm_controller/get_arms', 10) # Wait at most 10 seconds
                 get_available_arms = rospy.ServiceProxy('/arm_controller/get_arms', get_arms)
                 try:
                     response = get_available_arms()
