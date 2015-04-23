@@ -38,6 +38,7 @@ class ArmControlInterpreter(LatchingJoystickInterpreter):
         self.open_close_toggle = self.settings["open_close"]
 
     def when_active(self):
+        self.velocity_goal.required_velocity.header.stamp  = rospy.get_rostime()
         self.arm_velocity_client.send_goal(self.velocity_goal)
 
     def become_inactive(self):
