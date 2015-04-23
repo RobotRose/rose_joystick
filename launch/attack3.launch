@@ -7,7 +7,6 @@
             name="attack3_joystick_teleop_interpreter" 
             output="screen" 
             args="$(find rose_joystick)/param/logitech_attack_3.yaml"
-            required="true"
             ns="attack3">
         <remap to="joy" from="attack3_joy"/>
     </node>
