@@ -7,7 +7,6 @@
             name="joystick_teleop_interpreter" 
             output="screen" 
             args="$(find rose_joystick)/param/thrustmaster_t_flight-stick_x.yaml"
-            required="true"
             ns="thrustmaster">
     </node>
 </launch>

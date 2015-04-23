@@ -3,6 +3,5 @@
             type="teleop.py" 
             name="$(anon joystick_teleop_interpreter)" 
             output="screen" 
-            args="$(find rose_joystick)/param/gui_arrows.yaml"
-            required="true"/>
+            args="$(find rose_joystick)/param/gui_arrows.yaml"/>
 </launch>
