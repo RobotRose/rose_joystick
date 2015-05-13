@@ -35,7 +35,8 @@ class JoystickInterpreter(object):
         return "Undefined JoystickInterpreter"
 
 class Submode(JoystickInterpreter):
-    """A Submode is a Joystick interpreter that interprets signal slighlty different while a collection of buttons(s) is pushed"""
+    """A Submode is a Joystick interpreter that interprets signal slightly different when a collection of buttons(s) is pushed,
+    similar to the shift-button on a keyboard"""
 
     def __init__(self, settings, parent):
         super(Submode, self).__init__()
@@ -56,6 +57,10 @@ class Submode(JoystickInterpreter):
         return "{0}_{1} is enabled by button indices {2}".format(self.parent, self, self.enable_buttons)
 
 class CombinedInterpreter(JoystickInterpreter):
+    """JoystickInterpreters can be combined into one Interpreter that can use all axes and buttons,
+    intended for when two different interpreters controlling different parts of a robot may be controlled at the same time.
+    There is no checks whether the combination is not conflicting or uses the same axis twice, 
+    as this may also be a feature."""
 
     def __init__(self, *subinterpreters):
         self.subinterpreters = subinterpreters
@@ -76,6 +81,7 @@ class CombinedInterpreter(JoystickInterpreter):
         return "+".join([str(i) for i in self.subinterpreters])
 
 class ButtonState(object):
+    """Contains logic to detect events in button states"""
     def __init__(self):
         self.previous_button_states = []
 
@@ -133,6 +139,7 @@ def twist_is_small(twist, threshold=0.001):
     return all_small
 
 class LatchingJoystickInterpreter(JoystickInterpreter):
+    """The LatchingJoystickInterpreter keeps publishing a message at a steady interval when the command is set once."""
     def __init__(self, rate=0.2):
         super(LatchingJoystickInterpreter, self).__init__()
         self.rate = rate
@@ -140,14 +147,18 @@ class LatchingJoystickInterpreter(JoystickInterpreter):
         self.previously_active = False
 
     def start(self):
+        """Start publishing a message (implemented in when_active) at some rate"""
         self.timer = rospy.Timer(rospy.Duration(self.rate), self.repeat_messsage, oneshot=False)
 
     def stop(self):
+        """Stop publishing the message"""
         rospy.loginfo("Stopping {0}".format(self))
         self.timer.shutdown()
         self.become_inactive()
 
     def repeat_messsage(self, *args, **kwargs):
+        """Send a message once (through when_active). 
+        If the message should stop, call become_inactive"""
         if self.active:
             self.when_active()
         
@@ -157,9 +168,11 @@ class LatchingJoystickInterpreter(JoystickInterpreter):
         self.previously_active = self.active
 
     def when_active(self):
+        """Publish a message once"""
         raise NotImplementedError("Subclasses must implement this function")
 
     def become_inactive(self):
+        """Send a stop signal or something else to make the interpreter inactive"""
         raise NotImplementedError("Subclasses must implement this function")
 
 
