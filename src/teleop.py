@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 
+"""teleop.py is the entry point for joystick control.
+When a a Joy-message is received, it is passed to an Interpreter, 
+    that handles most of the conversion of a joystick-state to movement commands. 
+The JoystickTeleop-class allows to switch between interpreters by a service call or via a button. 
+Each interpreter is a mode that the joystick can be in, 
+    e.g. base-controlling-mode or arm-controlling mode etc.
+
+The JoystickTeleop is initialized with a nested dictionary (from a yaml-file) 
+    that indicates which joystick-axes map to which motion axis and which button does what."""
+
 import roslib; roslib.load_manifest("rose_joystick")
 import rospy
 
@@ -11,7 +21,6 @@ from sensor_msgs.msg import Joy
 from std_msgs.msg import String
 from roscomm.msg import stringlist
 
-from collections import OrderedDict
 
 import sys
 import yaml
@@ -37,7 +46,7 @@ rospy.loginfo = CallIfChanged(rospy.loginfo) #Decorate loginfo to only print if 
 class JoystickTeleop(object):
     def __init__(self, settings):
         """Initialize a new JoystickTeleop. 
-        @param settings is a parsed yaml file"""
+        @param settings is a parsed yaml file, i.e. a nested dictionary"""
         self.mode_publisher = rospy.Publisher("~mode", String, latch=True)
         self.switch_joystick_mode_service = rospy.Service("~set_mode", switch_joystick_mode, self.handle_set_joystick_mode)
         self.available_modes_publisher = rospy.Publisher("~available_modes", stringlist, latch=True)
@@ -107,21 +116,27 @@ class JoystickTeleop(object):
         self.interpreter = self.interpreters[0]
 
 
-    @property
-    def interpreter(self):
-        return self._interpreter
-
     def publish_current_mode(self):
+        """Publish what mode the teleop is currently in"""
         rospy.logwarn("Current mode controls {0}".format(self.interpreter))
         self.mode_publisher.publish(str(self.interpreter))
 
 
     def publish_available_modes(self):
+        """Announce the list of interpreters available. 
+        Elements from this list can be received again via handle_set_joystick_mode"""
         modes = stringlist(self.interpreter_names)
         self.available_modes_publisher.publish(modes)
 
+
+    @property
+    def interpreter(self):
+        """Get the current interpreter"""
+        return self._interpreter
+
     @interpreter.setter
     def interpreter(self, value):
+        """Stop the current interpreter, set the new current interpreter, start it and announce the change"""
         #Stop the previous one
         if self._interpreter:
             self._interpreter.stop()
@@ -136,6 +151,8 @@ class JoystickTeleop(object):
         self.publish_available_modes()
 
     def handle_set_joystick_mode(self, request):
+        """Check whether the requested mode is available, 
+        sets the mode if so and replies with a confirmation"""
         rospy.loginfo("Mode switch requested: {0}".format(request.switch_to_mode))
         
         if request.switch_to_mode in self.interpreter_names:
@@ -147,9 +164,7 @@ class JoystickTeleop(object):
             return switch_joystick_modeResponse(False)
 
     def _switch_mode_with_button(self, switch_interpreter):
-        #or (joystick_msg.buttons[self.previous_btn] != self.previous_button_state[self.previous_btn] and not joystick_msg.buttons[self.previous_btn]):
-        #The modeswitcher is was on and is now released: clicked and thus switch to the next mode
-
+        """Take the next mode from the list of modes"""
         current_interpreter_index = 0
         try:
             current_interpreter_index = self.interpreters.index(self.interpreter)
@@ -164,6 +179,7 @@ class JoystickTeleop(object):
             self.mode_publisher.publish(str(self.interpreter)) #Real-life starts counting at 1
 
     def process_joystick(self, joystick_msg):
+        """Take a joystick message and let be interpreted by the interpreter that is currently selected."""
         def apply_deadzone(signal):
             negativity_multiplier = 1 if signal > 0 else -1
             signal = abs(signal) #multiply final result with negativity_multiplier later on
