@@ -1,0 +1,15 @@
+<launch>    
+    <node pkg="joy" type="joy_node" name="rumble2_joystick_driver" output="screen" ns="rumble2">
+        <!-- <remap from="joy" to="rumble2_joy"/> -->
+        <!--Map to a specific topic so not all joysticks with different mappings publish to the same topic and mess things up-->
+    </node>
+    <node   pkg="rose_joystick" 
+            type="teleop.py" 
+            name="rumble2_joystick_teleop_interpreter" 
+            output="screen" 
+            args="$(find rose_joystick)/param/logitech_rumble2.yaml"
+            ns="rumble2">
+        <!-- <remap to="joy" from="rumble2_joy"/> -->
+        <remap from="/manual_cmd_vel" to="/cmd_vel"/>
+    </node>
+</launch>

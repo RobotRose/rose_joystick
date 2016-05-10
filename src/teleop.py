@@ -15,11 +15,11 @@ import rospy
 
 from rose_joystick.srv import switch_joystick_mode, switch_joystick_modeResponse
 from rose_joystick.msg import available_modes
-from rose_arm_controller_msgs.srv import get_arms
+# from rose_arm_controller_msgs.srv import get_arms
 
 from sensor_msgs.msg import Joy
 from std_msgs.msg import String
-from roscomm.msg import stringlist
+# from roscomm.msg import stringlist
 
 
 import sys
@@ -27,9 +27,9 @@ import yaml
 
 import interpreter
 import base
-import neck
-import arm, arm_submodes
-import lift
+# import neck
+# import arm, arm_submodes
+# import lift
 
 class CallIfChanged(object):
     '''Decorator that only executes the function if the input is different than the previous time it was called'''
@@ -49,7 +49,7 @@ class JoystickTeleop(object):
         @param settings is a parsed yaml file, i.e. a nested dictionary"""
         self.mode_publisher = rospy.Publisher("~mode", String, latch=True)
         self.switch_joystick_mode_service = rospy.Service("~set_mode", switch_joystick_mode, self.handle_set_joystick_mode)
-        self.available_modes_publisher = rospy.Publisher("~available_modes", stringlist, latch=True)
+        # self.available_modes_publisher = rospy.Publisher("~available_modes", stringlist, latch=True)
 
         self.deadzone = settings.get("deadzone", 0.05)
     
@@ -63,44 +63,45 @@ class JoystickTeleop(object):
             else:
                 base_mode = base.BaseControlInterpreter(settings['base'])
 
-        if settings.has_key('neck'):
-            if base_mode:
-                if settings['neck'].has_key("tilt_simple"):
-                    neck_simple = neck.SimpleNeckController(settings['neck'])
-                    neck_predef = neck.NeckPredefinedController(settings['neck'])
-                    self.interpreters += [interpreter.CombinedInterpreter(base_mode, neck_simple, neck_predef)]
-                else:
-                    self.interpreters += [base_mode]
-                    self.interpreters += [neck.NeckControlInterpreter(settings['neck'])]
+        if False: #settings.has_key('neck'):
+            pass
+            # if base_mode:
+            #     if settings['neck'].has_key("tilt_simple"):
+            #         neck_simple = neck.SimpleNeckController(settings['neck'])
+            #         neck_predef = neck.NeckPredefinedController(settings['neck'])
+            #         self.interpreters += [interpreter.CombinedInterpreter(base_mode, neck_simple, neck_predef)]
+            #     else:
+            #         self.interpreters += [base_mode]
+            #         self.interpreters += [neck.NeckControlInterpreter(settings['neck'])]
         else:
             self.interpreters += [base_mode]
 
-        if settings.has_key('arms'):
-            available_arms = []
-            try:
-                rospy.wait_for_service('/arm_controller/get_arms', 10) # Wait at most 10 seconds
-                get_available_arms = rospy.ServiceProxy('/arm_controller/get_arms', get_arms)
-                try:
-                    response = get_available_arms()
-                    available_arms = response.arms
-                except rospy.ServiceException, e:
-                    print "Service call failed: %s"%e
+        # if settings.has_key('arms'):
+        #     available_arms = []
+        #     try:
+        #         rospy.wait_for_service('/arm_controller/get_arms', 10) # Wait at most 10 seconds
+        #         get_available_arms = rospy.ServiceProxy('/arm_controller/get_arms', get_arms)
+        #         try:
+        #             response = get_available_arms()
+        #             available_arms = response.arms
+        #         except rospy.ServiceException, e:
+        #             print "Service call failed: %s"%e
+        #
+        #         for arm in available_arms:
+        #             if settings['arms'].has_key('submodes'):
+        #                 left = arm_submodes.ArmControlInterpreterWithSubmodes(settings['arms'], name=arm)
+        #                 if settings['neck'].has_key("tilt_simple"):
+        #                     neck_simple = neck.SimpleNeckController(settings['neck'])
+        #                     neck_predef = neck.NeckPredefinedController(settings['neck'])
+        #                     self.interpreters += [interpreter.CombinedInterpreter(left, neck_simple, neck_predef)]
+        #                     # self.interpreters += [interpreter.CombinedInterpreter(right, neck_simple)]
+        #             else:
+        #                 self.interpreters += [arm.ArmControlInterpreter(settings['arms'], name=arm)]
+        #     except rospy.ROSException, e:
+        #         print("Could not connect to get available arms via service request: " + str(e))
 
-                for arm in available_arms:
-                    if settings['arms'].has_key('submodes'):
-                        left = arm_submodes.ArmControlInterpreterWithSubmodes(settings['arms'], name=arm)
-                        if settings['neck'].has_key("tilt_simple"):
-                            neck_simple = neck.SimpleNeckController(settings['neck'])
-                            neck_predef = neck.NeckPredefinedController(settings['neck'])
-                            self.interpreters += [interpreter.CombinedInterpreter(left, neck_simple, neck_predef)]
-                            # self.interpreters += [interpreter.CombinedInterpreter(right, neck_simple)]
-                    else:
-                        self.interpreters += [arm.ArmControlInterpreter(settings['arms'], name=arm)]
-            except rospy.ROSException, e:
-                print("Could not connect to get available arms via service request: " + str(e))
-
-        if settings.has_key('lift'):
-            self.interpreters += [lift.LiftControlInterpreter(settings['lift'])]
+        # if settings.has_key('lift'):
+        #     self.interpreters += [lift.LiftControlInterpreter(settings['lift'])]
 
         self.interpreter_names = [str(inter) for inter in self.interpreters]
         self._interpreter = None
@@ -122,11 +123,11 @@ class JoystickTeleop(object):
         self.mode_publisher.publish(str(self.interpreter))
 
 
-    def publish_available_modes(self):
-        """Announce the list of interpreters available. 
-        Elements from this list can be received again via handle_set_joystick_mode"""
-        modes = stringlist(self.interpreter_names)
-        self.available_modes_publisher.publish(modes)
+    # def publish_available_modes(self):
+    #     """Announce the list of interpreters available.
+    #     Elements from this list can be received again via handle_set_joystick_mode"""
+    #     modes = stringlist(self.interpreter_names)
+    #     self.available_modes_publisher.publish(modes)
 
 
     @property
@@ -148,7 +149,7 @@ class JoystickTeleop(object):
             self._interpreter.start()
 
         self.publish_current_mode() 
-        self.publish_available_modes()
+        # self.publish_available_modes()
 
     def handle_set_joystick_mode(self, request):
         """Check whether the requested mode is available, 
@@ -241,7 +242,7 @@ if __name__ == "__main__":
         print "Optionally, specify a mapping"
 
     teleop = JoystickTeleop(settings)
-    teleop.publish_available_modes()
+    # teleop.publish_available_modes()
     teleop.publish_current_mode()
 
     rospy.spin()

@@ -1,7 +1,7 @@
 import roslib; roslib.load_manifest("rose_joystick")
 import rospy
 
-from geometry_msgs.msg import Twist, TwistStamped
+from geometry_msgs.msg import Twist  # , TwistStamped
 
 from interpreter import LatchingJoystickInterpreter, Submode, twist_is_small
 import threading
@@ -11,7 +11,7 @@ class BaseControlInterpreter(LatchingJoystickInterpreter):
 
     def __init__(self, settings, driving_scale=0.1, steering_scale=0.2): #max value for a Joy-axis value is 1.0. Max speed is 0.1m/s
         super(BaseControlInterpreter, self).__init__()
-        self.cmd_vel = rospy.Publisher("/manual_cmd_vel", TwistStamped)
+        self.cmd_vel = rospy.Publisher("/manual_cmd_vel", Twist)
 
         self.settings = settings
 
@@ -20,20 +20,20 @@ class BaseControlInterpreter(LatchingJoystickInterpreter):
         self.twist = Twist()
 
     def when_active(self):
-        twist_stamped = TwistStamped()
-        twist_stamped.header.stamp  = rospy.get_rostime()
-        twist_stamped.twist         = self.twist
+        # twist_stamped = TwistStamped()
+        # twist_stamped.header.stamp  = rospy.get_rostime()
+        # twist_stamped.twist         = self.twist
 
-        self.cmd_vel.publish(twist_stamped)
+        self.cmd_vel.publish(self.twist)
         
     def become_inactive(self):
         self.twist = Twist() #Empty twist, everything is zero
         
-        twist_stamped = TwistStamped()
-        twist_stamped.header.stamp  = rospy.get_rostime()
-        twist_stamped.twist         = self.twist
+        # twist_stamped = TwistStamped()
+        # twist_stamped.header.stamp  = rospy.get_rostime()
+        # twist_stamped.twist         = self.twist
 
-        self.cmd_vel.publish(twist_stamped)
+        self.cmd_vel.publish(self.twist)
 
     def process(self, joystick_msg, down, released, downed):
         self.twist = Twist()
@@ -105,7 +105,7 @@ class BaseControlInterpreterWithSubmodes(LatchingJoystickInterpreter):
 
     def __init__(self, settings):
         super(BaseControlInterpreterWithSubmodes, self).__init__()
-        self.cmd_vel = rospy.Publisher("/manual_cmd_vel", TwistStamped)
+        self.cmd_vel = rospy.Publisher("/manual_cmd_vel", Twist)
 
         self.settings = settings
 
@@ -121,21 +121,21 @@ class BaseControlInterpreterWithSubmodes(LatchingJoystickInterpreter):
         super(BaseControlInterpreterWithSubmodes, self).start()
 
     def when_active(self):
-        twist_stamped = TwistStamped()
-        twist_stamped.header.stamp  = rospy.get_rostime()
-        twist_stamped.twist         = self.twist
+        # twist_stamped = TwistStamped()
+        # twist_stamped.header.stamp  = rospy.get_rostime()
+        # twist_stamped.twist         = self.twist
 
-        self.cmd_vel.publish(twist_stamped)
+        self.cmd_vel.publish(self.twist)
         
         
     def become_inactive(self):
         self.twist = Twist() #Empty twist, everything is zero
         
-        twist_stamped = TwistStamped()
-        twist_stamped.header.stamp  = rospy.get_rostime()
-        twist_stamped.twist         = self.twist
+        # twist_stamped = TwistStamped()
+        # twist_stamped.header.stamp  = rospy.get_rostime()
+        # twist_stamped.twist         = self.twist
 
-        self.cmd_vel.publish(twist_stamped)
+        self.cmd_vel.publish(self.twist)
 
     def process(self, joystick_msg, down, released, downed):
         active_mode = self.submodes.get(tuple(sorted(down)), None) 
