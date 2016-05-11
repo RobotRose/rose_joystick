@@ -2,15 +2,15 @@ topic: "joy"
 base:
   submodes:
     steering:
-      linear_x: {axis: 3, scale: 0.8}
-      angular_z: {axis: 2, scale: 1.6}
+      linear_x: {axis: 3, scale: 0.4}
+      angular_z: {axis: 2, scale: 0.2}
       throttle: {axis: 1, scale: 10.0}
       enable: 
         - 5
     strafing:
-      linear_x: {axis: 3, scale: 0.8}
+      linear_x: {axis: 3, scale: 0.4}
       throttle: {axis: 1, scale: 10.0}
-      linear_y: {axis: 2, scale: 0.4}
+      linear_y: {axis: 2, scale: 0.2}
       enable:
         - 5
         - 4
